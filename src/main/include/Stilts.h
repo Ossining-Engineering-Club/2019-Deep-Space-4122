@@ -5,7 +5,7 @@ class Stilts{
     private:
         frc::VictorSP *FrontStilts;
         frc::VictorSP *RearStilts;
-        ctre::phoenix::motorcontrol::can::WPI_TalonSRX *StiltDrive;
+        ctre::phoenix::motorcontrol::can::WPI_VictorSPX *StiltDrive;
     public:
         Stilts();
         void SetFrontPower(double power);
