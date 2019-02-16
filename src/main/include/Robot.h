@@ -14,6 +14,9 @@
 #include "OECPigeonIMU.h"
 #include "Tankdrive.h"
 #include "Stilts.h"
+#include "Intake.h"
+#include "Arm.h"
+#include "OECJoystick.h"
 
 using namespace frc;
 
@@ -31,14 +34,15 @@ class Robot : public frc::TimedRobot {
   void TestPeriodic() override;
 private:
   double ypr[3];
-  std::vector<double> *area;
   Tankdrive *tankdrive;
   OECPigeonIMU *myGyro;
+  Arm *arm;
+  Intake *intake;
   Stilts *stilts;
   Lift *lift;
   Relay *lightRelay;
-  Joystick *stick2;
-  Joystick *stick1;
-  JoystickButton *stick1button6;
   SmartDashboard *dash;
+  OECJoystick *stickLeft;
+  OECJoystick *stickRight;
+  OECJoystick *stickUtil;
 };

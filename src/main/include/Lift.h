@@ -5,8 +5,9 @@ class Lift{
     private:
         ctre::phoenix::motorcontrol::can::WPI_VictorSPX *LiftBackMotor;
         ctre::phoenix::motorcontrol::can::WPI_VictorSPX *LiftFrontMotor;
-
+        frc::Encoder *liftEncoder;
+        frc::SmartDashboard *smartDash;
     public:
-        Lift();
+        Lift(frc::SmartDashboard *dash);
         void SetPower(double power);
 };

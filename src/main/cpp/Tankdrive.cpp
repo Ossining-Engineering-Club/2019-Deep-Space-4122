@@ -17,6 +17,7 @@ Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEnco
     leftEncoder->Reset();
     rightEncoder->Reset();
     throttle = 1.0;
+    myTimer = new Timer();
     loopMode = internal;
 }
 void Tankdrive::SetPower(double leftPower, double rightPower){
@@ -39,6 +40,9 @@ double Tankdrive::GetLeftEncoderDist(){
 }
 double Tankdrive::GetRightEncoderDist(){
     return rightEncoder->GetDistance();
+}
+void Tankdrive::DriveStraightGyro(double power, double startupTime){
+
 }
 void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower){
     pidController->ResetIntegral();

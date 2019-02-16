@@ -7,10 +7,11 @@
 using namespace frc;
 class Tankdrive{
     public:
-        enum LoopMode{internal, external};
-        enum DriveSide{left, right};
+        enum LoopMode{internal = 0, external = 1};
+        enum DriveSide{left = 0, right = 1};
 
         Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, OECPigeonIMU *pigeonIMU, SmartDashboard *dash);
+        void DriveStraightGyro(double power, double startupTime);
         void SetPower(double leftPower, double rightPower);
         void SetThrottle(double throttle);
         void ResetEncoders();
@@ -33,6 +34,7 @@ class Tankdrive{
         Encoder *leftEncoder;
         Encoder *rightEncoder;
         double throttle;
+        Timer *myTimer;
         LoopMode loopMode;
             
 };
