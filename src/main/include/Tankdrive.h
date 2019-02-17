@@ -11,15 +11,15 @@ class Tankdrive{
         enum DriveSide{left = 0, right = 1};
 
         Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, OECPigeonIMU *pigeonIMU, SmartDashboard *dash);
-        void DriveStraightGyro(double power, double startupTime);
+        void DriveStraightGyro(double power, double distInches, double startupTime, bool stopAtEnd);
+        void TurnToHeading(double maxPower, double headingDegrees);
         void SetPower(double leftPower, double rightPower);
         void SetThrottle(double throttle);
         void ResetEncoders();
         void SetLoopMode(LoopMode mode);
-        double GetEncoderDist(DriveSide encoderSide);
         double GetRightEncoderDist();
         double GetLeftEncoderDist();
-        void DriveCurveEncoder(double radius, double degrees, double avgPower);
+        void DriveCurveEncoder(double radius, double degrees, double avgPower, double startupTime, bool stopAtEnd);
         void DriveGyro(double degreesPerInch, double degrees, double avgPower, double timeoutSec);
         void DriveGyroByRadius(double radius, double degrees, double avgPower, double timeoutSec);
         ctre::phoenix::motorcontrol::can::WPI_TalonSRX* GetTalonSRX();

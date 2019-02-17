@@ -6,10 +6,10 @@ Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEnco
     this->dash = dash;
     this->pigeonIMU = pigeonIMU;
     pidController = new OECPIDController(CURVED_KP, CURVED_KI, CURVED_KD, CURVED_CORRECTION);
-    LeftFrontDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(01);
-    LeftBackDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(02);
-    RightFrontDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(03);
-    RightBackDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(04);
+    LeftFrontDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(1);
+    LeftBackDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(2);
+    RightFrontDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(3);
+    RightBackDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(4);
     leftEncoder = new frc::Encoder(leftEncoder1, leftEncoder2, false, CounterBase::EncodingType::k4X);
     rightEncoder = new frc::Encoder(rightEncoder1, rightEncoder2, true, CounterBase::EncodingType::k4X);
     rightEncoder->SetDistancePerPulse(ENCODER_CONST);
@@ -29,23 +29,61 @@ void Tankdrive::SetPower(double leftPower, double rightPower){
 void Tankdrive::SetThrottle(double throttle){
     Tankdrive::throttle = throttle;
 }
-double Tankdrive::GetEncoderDist(Tankdrive::DriveSide encoderSide){
-    if(encoderSide = DriveSide::left)
-        return leftEncoder->GetDistance();
-    else
-        return rightEncoder->GetDistance();
-}
 double Tankdrive::GetLeftEncoderDist(){
     return leftEncoder->GetDistance();
 }
 double Tankdrive::GetRightEncoderDist(){
     return rightEncoder->GetDistance();
 }
-void Tankdrive::DriveStraightGyro(double power, double startupTime){
-
+void Tankdrive::TurnToHeading(double maxPower, double headingDegrees){
+    double turnError = 0.0;
+    double correction = 0.0;
+    pidController = new OECPIDController(TURN_KP, TURN_KI, TURN_KD, maxPower);
+    while(abs(headingDegrees-pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees)) > TURN_ACCURACY){
+        correction = pidController->GetPIDCorrection(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees)-headingDegrees);
+        SetPower(correction, -1.0*correction);
+    }
+    SetPower(0.0, 0.0);
 }
-void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower){
-    pidController->ResetIntegral();
+void Tankdrive::DriveStraightGyro(double power, double distInches, double startupTime, bool stopAtEnd){
+    pidController = new OECPIDController(STRAIGHT_KP, STRAIGHT_KI, STRAIGHT_KD, STRAIGHT_CORRECTION);
+    ResetEncoders();
+    double startHeading = pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees);
+    double pow = 0.0;
+    double gyroError = 0.0;
+    double correction;
+    myTimer->Stop();
+    myTimer->Reset();
+    myTimer->Start();
+    while(startupTime > myTimer->Get() && abs(GetLeftEncoderDist() + GetRightEncoderDist()) < abs(2.0*distInches) - 2.0*STOP_DIST){
+        gyroError = startHeading - pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees);
+        pow = (myTimer->Get()/startupTime)*power;
+        correction = pidController->GetPIDCorrection(gyroError);
+        SetPower(pow + correction, pow - correction);
+    }
+    while(abs(GetLeftEncoderDist() + GetRightEncoderDist()) < abs(2.0*distInches) - 2.0*STOP_DIST){
+        correction = pidController->GetPIDCorrection(gyroError);
+        SetPower(power + correction, power - correction);
+    }
+
+    if(stopAtEnd){
+        if(abs(power/2.0) < 0.2)
+            pow = (abs(power)/power)*power/2.0;
+        else 
+            pow = (abs(power)/power)*STOP_POWER;
+    }
+    else{
+        pow = power;
+    }
+
+    while(abs(GetLeftEncoderDist() + GetRightEncoderDist()) < abs(2.0*distInches)){
+        correction = pidController->GetPIDCorrection(gyroError);
+        SetPower(pow + correction, pow - correction);
+    }
+}
+void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower, double startupTime, bool stopAtEnd){
+    double tempPower = 0.0;
+    pidController = new OECPIDController(CURVED_KP, CURVED_KI, CURVED_KD, CURVED_CORRECTION);
     double leftPower = avgPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
     double rightPower = avgPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
     leftPower = (abs(leftPower)/leftPower)*pow(abs(leftPower), TURN_GAMMA);
@@ -76,7 +114,19 @@ void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower
     double leftTotal = 0.0;
     double rightTotal = 0.0;
     int count = 0;
+    myTimer->Stop();
+    myTimer->Reset();
+    myTimer->Start();
     while(abs(avgDist) < abs(totalDist)){
+        if(myTimer->Get() < startupTime){
+            tempPower = (myTimer->Get()/startupTime)*avgPower;
+            double leftPower = tempPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
+            double rightPower = tempPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
+        }
+        else{
+            double leftPower = avgPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
+            double rightPower = avgPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
+        }
         leftEnc = GetLeftEncoderDist();
         rightEnc = GetRightEncoderDist();
         dash->PutNumber("leftEncoder", GetLeftEncoderDist());
@@ -99,7 +149,8 @@ void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower
 
     dash->PutNumber("Left Average", leftTotal/count);
     dash->PutNumber("Right Average", rightTotal/count);
-    SetPower(0.0,0.0);
+    if(stopAtEnd)
+        SetPower(0.0,0.0);
 }
 ctre::phoenix::motorcontrol::can::WPI_TalonSRX* Tankdrive::GetTalonSRX(){
     return LeftBackDrive;
@@ -122,7 +173,7 @@ void Tankdrive::DriveGyro(double degreesPerInch, double degrees, double avgPower
     pigeonIMU->ResetAngle();
     SetPower(leftPower, rightPower);
     while(abs(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees)) < abs(degrees)){
-        double avgDist = GetEncoderDist(DriveSide::left)/2.0+GetEncoderDist(DriveSide::right)/2.0;
+        double avgDist = GetLeftEncoderDist()/2.0+GetRightEncoderDist()/2.0;
         double correction = pidController->GetPIDCorrection(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees) - avgDist*degreesPerInch);
         SetPower(leftPower - correction, rightPower + correction);
     }

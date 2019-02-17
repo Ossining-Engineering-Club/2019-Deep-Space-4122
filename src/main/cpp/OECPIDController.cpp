@@ -61,7 +61,12 @@ double OECPIDController::GetPIDCorrection(double error)
     lastError = error;
     lastTime = GetTimeMillis();
 
-    return propCorrection + intCorrection + diffCorrection;
+    if(propCorrection + intCorrection + diffCorrection > max)
+        return max;
+    else if(propCorrection + intCorrection + diffCorrection < -1.0 * max)
+        return -1.0 * max;
+    else
+        return propCorrection + intCorrection + diffCorrection;
 
 }
 
