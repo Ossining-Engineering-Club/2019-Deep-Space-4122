@@ -3,9 +3,10 @@
 void Robot::RobotInit()
 {
     cs::UsbCamera msLifeCam1 = CameraServer::GetInstance()->StartAutomaticCapture();
-    msLifeCam1.SetResolution(640, 480);
+    msLifeCam1.SetResolution(320, 240);
     msLifeCam1.SetFPS(10);
-    msLifeCam1.SetExposureManual(12);
+    msLifeCam1.SetExposureAuto();
+    pointer2msLifeCam1 = &msLifeCam1;
     Wait(2);
 
     dash->init();
@@ -31,13 +32,16 @@ void Robot::RobotInit()
     dash->PutString("Init Status", "Complete");
 }
 
-void Robot::AutonomousInit() {}
+void Robot::AutonomousInit() {
+    pointer2msLifeCam1->SetExposureManual(12);
+}
 void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {
     lightRelay->Set(frc::Relay::Value::kOn);
     myGyro->ResetAngle();
-    tankdrive->ResetEncoders();
+  //  tankdrive->ResetEncoders();
+  //  pointer2msLifeCam1->SetExposureAuto();
 }
 
 double driveThrottle = 0.0;
@@ -66,11 +70,9 @@ void Robot::TeleopPeriodic() {
     else
         stilts->SetRearPower(0.0);
     if(stickLeft->GetButton(4))
-        stilts->SetDrivePower(0.1);
-    else
-        stilts->SetDrivePower(0.0);
-    if(stickLeft->GetButton(5))
-        stilts->SetDrivePower(-0.1);
+        stilts->SetDrivePower(0.5);
+    else if(stickLeft->GetButton(5))
+        stilts->SetDrivePower(-0.5);
     else
         stilts->SetDrivePower(0.0);
 

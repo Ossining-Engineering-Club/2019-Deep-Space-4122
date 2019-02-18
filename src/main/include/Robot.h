@@ -34,6 +34,7 @@ class Robot : public frc::TimedRobot {
   void TestPeriodic() override;
 private:
   double ypr[3];
+  cs::UsbCamera* pointer2msLifeCam1;
   Tankdrive *tankdrive;
   OECPigeonIMU *myGyro;
   Arm *arm;
