@@ -13,7 +13,8 @@
   },
   "C_Cpp.default.configurationProvider": "vscode-wpilib",
   "files.associations": {
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "cmath": "cpp"
   },
-  "wpilib.autoStartRioLog": true
+  "wpilib.autoStartRioLog": false
 }

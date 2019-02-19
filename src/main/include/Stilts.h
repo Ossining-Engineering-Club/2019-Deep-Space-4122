@@ -6,6 +6,8 @@ class Stilts{
         frc::VictorSP *FrontStilts;
         frc::VictorSP *RearStilts;
         ctre::phoenix::motorcontrol::can::WPI_VictorSPX *StiltDrive;
+        frc::DigitalInput *frontLimitSwitch;
+        frc::DigitalInput *rearLimitSwitch;
     public:
         Stilts();
         void SetFrontPower(double power);

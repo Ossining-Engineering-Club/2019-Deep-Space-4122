@@ -2,18 +2,18 @@
 #include <iostream>
 
 using namespace std;
-Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, OECPigeonIMU *pigeonIMU, SmartDashboard *dash){
+Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, SmartDashboard *dash){
     this->dash = dash;
-    this->pigeonIMU = pigeonIMU;
     pidController = new OECPIDController(CURVED_KP, CURVED_KI, CURVED_KD, CURVED_CORRECTION);
     LeftFrontDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(1);
     LeftBackDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(2);
     RightFrontDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(3);
     RightBackDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(4);
+    pigeonIMU = new OECPigeonIMU(LeftBackDrive);
     leftEncoder = new frc::Encoder(leftEncoder1, leftEncoder2, false, CounterBase::EncodingType::k4X);
     rightEncoder = new frc::Encoder(rightEncoder1, rightEncoder2, true, CounterBase::EncodingType::k4X);
-    rightEncoder->SetDistancePerPulse(ENCODER_CONST);
-    leftEncoder->SetDistancePerPulse(ENCODER_CONST);
+    rightEncoder->SetDistancePerPulse(RIGHT_ENCODER_CONST);
+    leftEncoder->SetDistancePerPulse(LEFT_ENCODER_CONST);
     leftEncoder->Reset();
     rightEncoder->Reset();
     throttle = 1.0;
@@ -21,10 +21,10 @@ Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEnco
     loopMode = internal;
 }
 void Tankdrive::SetPower(double leftPower, double rightPower){
-    LeftBackDrive->Set(leftPower * throttle);
-    RightBackDrive->Set(-1.0 * rightPower * throttle);
-    LeftFrontDrive->Set(leftPower * throttle);
-    RightFrontDrive->Set(-1.0 * rightPower * throttle);
+    LeftBackDrive->Set(leftPower * throttle * STRAIGHT_DRIVE_CORRECTION);
+    RightBackDrive->Set(-1.0 * rightPower * throttle * (2-STRAIGHT_DRIVE_CORRECTION));
+    LeftFrontDrive->Set(leftPower * throttle * STRAIGHT_DRIVE_CORRECTION);
+    RightFrontDrive->Set(-1.0 * rightPower * throttle * (2- STRAIGHT_DRIVE_CORRECTION));
 }
 void Tankdrive::SetThrottle(double throttle){
     Tankdrive::throttle = throttle;
@@ -32,9 +32,11 @@ void Tankdrive::SetThrottle(double throttle){
 double Tankdrive::GetLeftEncoderDist(){
     return leftEncoder->GetDistance();
 }
+int Tankdrive::GetLeftEncoderRaw(){return leftEncoder->GetRaw();}
 double Tankdrive::GetRightEncoderDist(){
     return rightEncoder->GetDistance();
 }
+int Tankdrive::GetRightEncoderRaw(){return rightEncoder->GetRaw();}
 void Tankdrive::TurnToHeading(double maxPower, double headingDegrees){
     double turnError = 0.0;
     double correction = 0.0;
@@ -44,6 +46,9 @@ void Tankdrive::TurnToHeading(double maxPower, double headingDegrees){
         SetPower(correction, -1.0*correction);
     }
     SetPower(0.0, 0.0);
+}
+OECPigeonIMU* Tankdrive::GetPigeonIMU(){
+    return pigeonIMU;
 }
 void Tankdrive::DriveStraightGyro(double power, double distInches, double startupTime, bool stopAtEnd){
     pidController = new OECPIDController(STRAIGHT_KP, STRAIGHT_KI, STRAIGHT_KD, STRAIGHT_CORRECTION);
@@ -67,8 +72,8 @@ void Tankdrive::DriveStraightGyro(double power, double distInches, double startu
     }
 
     if(stopAtEnd){
-        if(abs(power/2.0) < 0.2)
-            pow = (abs(power)/power)*power/2.0;
+        if(abs(power) < 0.2)
+            pow = power;
         else 
             pow = (abs(power)/power)*STOP_POWER;
     }
@@ -80,6 +85,8 @@ void Tankdrive::DriveStraightGyro(double power, double distInches, double startu
         correction = pidController->GetPIDCorrection(gyroError);
         SetPower(pow + correction, pow - correction);
     }
+    if(stopAtEnd)
+        SetPower(0.0, 0.0);
 }
 void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower, double startupTime, bool stopAtEnd){
     double tempPower = 0.0;
@@ -110,7 +117,7 @@ void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower
     double error;
     double correction;
     ResetEncoders();
-    SetPower(leftPower, rightPower);
+    //SetPower(leftPower, rightPower);
     double leftTotal = 0.0;
     double rightTotal = 0.0;
     int count = 0;
@@ -118,14 +125,18 @@ void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower
     myTimer->Reset();
     myTimer->Start();
     while(abs(avgDist) < abs(totalDist)){
+        dash->PutNumber("Timer time", myTimer->Get());
         if(myTimer->Get() < startupTime){
             tempPower = (myTimer->Get()/startupTime)*avgPower;
-            double leftPower = tempPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
-            double rightPower = tempPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
+            dash->PutNumber("power", tempPower);
+            leftPower = tempPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
+            rightPower = tempPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
+            dash->PutString("startup status", "in progress");
         }
         else{
-            double leftPower = avgPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
-            double rightPower = avgPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
+            leftPower = avgPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
+            rightPower = avgPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
+            dash->PutString("startup status", "complete");
         }
         leftEnc = GetLeftEncoderDist();
         rightEnc = GetRightEncoderDist();

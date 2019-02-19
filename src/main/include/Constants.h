@@ -1,13 +1,15 @@
 #define DEBUG true
 
 //Tankdrive stuff:
-#define ENCODER_CONST 0.07766803
+
+#define LEFT_ENCODER_CONST 0.0649026
+#define RIGHT_ENCODER_CONST 0.0649026
 #define DRIVEBASE_WIDTH 28.64
 
-#define STRAIGHT_DRIVE_CORRECTION 0.9815
+#define STRAIGHT_DRIVE_CORRECTION .935
 #define BACKWARD_DRIVE_CORRECTION 0.0
 
-#define STOP_DIST 10.0
+#define STOP_DIST 18.0
 #define STOP_POWER 0.2
 
 #define TURN_GAMMA 1.0//2.25
@@ -25,9 +27,9 @@
 #define GYRO_KD -0.5
 #define GYRO_CORRECTION 1.0
     //Straight driving
-#define STRAIGHT_KP -0.2
+#define STRAIGHT_KP 0.0
 #define STRAIGHT_KI 0.0
-#define STRAIGHT_KD -0.1
+#define STRAIGHT_KD 0.0
 #define STRAIGHT_CORRECTION 1.0
     //Pivots
 #define TURN_KP -0.2

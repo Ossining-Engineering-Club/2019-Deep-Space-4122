@@ -1,11 +1,18 @@
 #include "Robot.h"
-
+cs::UsbCamera msLifeCam1;
+cs::UsbCamera msLifeCam2;
+cs::VideoSink server;
 void Robot::RobotInit()
 {
-    cs::UsbCamera msLifeCam1 = CameraServer::GetInstance()->StartAutomaticCapture();
+    msLifeCam1 = CameraServer::GetInstance()->StartAutomaticCapture(0);
+    msLifeCam2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
     msLifeCam1.SetResolution(320, 240);
-    msLifeCam1.SetFPS(10);
+    msLifeCam1.SetFPS(15);
     msLifeCam1.SetExposureAuto();
+    msLifeCam2.SetResolution(320, 240);
+    msLifeCam2.SetFPS(15);
+    msLifeCam2.SetExposureAuto();
+    server = CameraServer::GetInstance()->GetServer();
     pointer2msLifeCam1 = &msLifeCam1;
     Wait(2);
 
@@ -21,25 +28,23 @@ void Robot::RobotInit()
     arm = new Arm(dash);
     lift = new Lift(dash);
     intake = new Intake();
-    tankdrive = new Tankdrive(1, 0, 1,2,3,4, myGyro, dash);
-    myGyro = new OECPigeonIMU(tankdrive->GetTalonSRX());
+    tankdrive = new Tankdrive(1, 0, 1,2,3,4, dash);
 
     stickLeft = new OECJoystick(0);
     stickRight = new OECJoystick(1);
     stickUtil = new OECJoystick(2);
 
-    dash->PutString("Version:", "0.7");
+    dash->PutString("Version:", "0.8");
     dash->PutString("Init Status", "Complete");
 }
 
 void Robot::AutonomousInit() {
-    pointer2msLifeCam1->SetExposureManual(12);
 }
-void Robot::AutonomousPeriodic() {}
+void Robot::AutonomousPeriodic() {
+}
 
 void Robot::TeleopInit() {
     lightRelay->Set(frc::Relay::Value::kOn);
-    myGyro->ResetAngle();
   //  tankdrive->ResetEncoders();
   //  pointer2msLifeCam1->SetExposureAuto();
 }
@@ -47,16 +52,26 @@ void Robot::TeleopInit() {
 double driveThrottle = 0.0;
 double stiltsThrottle = 0.0;
 double liftThrottle = 0.0;
-
+bool lastBtn6 = false;
+int source = 0;
 void Robot::TeleopPeriodic() {
+    for(int x = 0; x <= 10; x++){
+    if(stickRight->GetButton(6) && !lastBtn6){
+        if(source == 0){
+            server.SetSource(msLifeCam1);
+            source = 1;
+        }
+        else if(source == 1){
+            server.SetSource(msLifeCam2);
+            source = 0;
+        }
+    }
+    
+
     driveThrottle = stickLeft->GetZ() / -2.0 + 0.5;
     tankdrive->SetPower(-1.0 * driveThrottle * stickLeft->GetY(), -1.0 * driveThrottle * stickRight->GetY());
-    dash->PutNumber("Drive Throttle", driveThrottle);
-    dash->PutNumber("Left Encoder Distance", tankdrive->GetLeftEncoderDist());
-    dash->PutNumber("Right Encoder Distance", tankdrive->GetRightEncoderDist());
 
     stiltsThrottle = stickRight -> GetZ() / -2.0 + 0.5;
-    dash->PutNumber("Stilts Throttle", stiltsThrottle);
     if(stickLeft->GetButton(3) && !stickLeft -> GetButton(2))
         stilts->SetFrontPower(stiltsThrottle);
     else if(!stickLeft->GetButton(3) && stickLeft -> GetButton(2))
@@ -77,24 +92,29 @@ void Robot::TeleopPeriodic() {
         stilts->SetDrivePower(0.0);
 
     liftThrottle = stickUtil->GetZ() / -2.0 + 0.5;
-    dash->PutNumber("Lift Throttle", liftThrottle);
+    
     if(stickUtil->GetButton(3) && !stickUtil ->GetButton(2))
         lift->SetPower(liftThrottle);
     else if(!stickUtil->GetButton(3) && stickUtil ->GetButton(2))
         lift->SetPower(-1.0 * liftThrottle);
     else
         lift -> SetPower(0.0);
-    
-    dash->PutNumber("Arm Power", stickUtil->GetY());
-    arm->SetPower(stickUtil->GetY(), true);
+
+    arm->SetPower(stickUtil->GetY(), stickUtil->GetButton(10));
 
     if(stickUtil->GetButton(4) && !stickUtil->GetButton(5))
-        intake->SetPower(0.5);
+        intake->SetPower(0.35);
     else if(!stickUtil->GetButton(4) && stickUtil->GetButton(5))
-        intake->SetPower(-0.5);
+        intake->SetPower(-0.35);
     else
         intake->SetPower(0.0);
+    }
+    dash->PutNumber("Arm Power", stickUtil->GetY());
+    dash->PutNumber("Drive Throttle", driveThrottle);
+    dash->PutNumber("Lift Throttle", liftThrottle);
+    dash->PutNumber("Stilts Throttle", stiltsThrottle);
 }
+
 
 void Robot::TestInit() {
 

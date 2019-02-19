@@ -11,5 +11,7 @@ Lift::Lift(frc::SmartDashboard *dash){
 void Lift::SetPower(double power){
     LiftFrontMotor->Set(power);
     LiftBackMotor->Set(-1.0*power);
-    smartDash->PutNumber("Lift Encoder Position", liftEncoder->GetDistance());
+}
+double Lift::GetEncoderPosition(){
+    return liftEncoder->GetDistance();
 }

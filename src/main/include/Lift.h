@@ -10,4 +10,5 @@ class Lift{
     public:
         Lift(frc::SmartDashboard *dash);
         void SetPower(double power);
+        double GetEncoderPosition();
 };

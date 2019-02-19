@@ -10,7 +10,8 @@ class Tankdrive{
         enum LoopMode{internal = 0, external = 1};
         enum DriveSide{left = 0, right = 1};
 
-        Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, OECPigeonIMU *pigeonIMU, SmartDashboard *dash);
+        Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, SmartDashboard *dash);
+        OECPigeonIMU* GetPigeonIMU();
         void DriveStraightGyro(double power, double distInches, double startupTime, bool stopAtEnd);
         void TurnToHeading(double maxPower, double headingDegrees);
         void SetPower(double leftPower, double rightPower);
@@ -18,7 +19,9 @@ class Tankdrive{
         void ResetEncoders();
         void SetLoopMode(LoopMode mode);
         double GetRightEncoderDist();
+        int GetRightEncoderRaw();
         double GetLeftEncoderDist();
+        int GetLeftEncoderRaw();
         void DriveCurveEncoder(double radius, double degrees, double avgPower, double startupTime, bool stopAtEnd);
         void DriveGyro(double degreesPerInch, double degrees, double avgPower, double timeoutSec);
         void DriveGyroByRadius(double radius, double degrees, double avgPower, double timeoutSec);

@@ -17,6 +17,7 @@
 #include "Intake.h"
 #include "Arm.h"
 #include "OECJoystick.h"
+#include<networktables/NetworkTableInstance.h>
 
 using namespace frc;
 
@@ -36,7 +37,6 @@ private:
   double ypr[3];
   cs::UsbCamera* pointer2msLifeCam1;
   Tankdrive *tankdrive;
-  OECPigeonIMU *myGyro;
   Arm *arm;
   Intake *intake;
   Stilts *stilts;
