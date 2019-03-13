@@ -130,7 +130,15 @@ double Vision::GetArea(unsigned int val)
 	else
 		return area[val];
 }
-
+double Vision::GetDistance(unsigned int val){
+	double X = sqrt(GetArea(val));
+	double dist = 300.0-32.7*X+1.51*X*X-0.0266*X*X*X;
+	return dist;
+}
+double Vision::GetAngle(unsigned int val){
+	double position = ((double)GetX(0) + (double)GetX(1))/2.0;
+	double angle = 45.0 * position / 320.0;
+}
 double Vision::GetX(unsigned int val)
 {
 

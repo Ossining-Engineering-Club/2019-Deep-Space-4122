@@ -14,7 +14,7 @@
 #include "OECPigeonIMU.h"
 #include "Tankdrive.h"
 
-
+#include "Vision.h"
 #include "OECJoystick.h"
 #include<networktables/NetworkTableInstance.h>
 
@@ -42,6 +42,7 @@ private:
   //Lift *lift;
   Relay *lightRelay;
   SmartDashboard *dash;
+  Vision *myVision;
   OECJoystick *stickLeft;
   OECJoystick *stickRight;
   OECJoystick *stickUtil;

@@ -26,6 +26,8 @@ void Robot::RobotInit()
     lightRelay = new Relay(0, frc::Relay::Direction::kForwardOnly);
     tankdrive = new Tankdrive(1, 0, 1,2,3,4, dash);
 
+    myVision = new Vision();
+
     stickLeft = new OECJoystick(0);
     stickRight = new OECJoystick(1);
     stickUtil = new OECJoystick(2);
@@ -57,6 +59,11 @@ bool lastBtn6 = false;
 bool lastBtn11 = false;
 int source = 0;
 void Robot::TeleopPeriodic() {
+
+    myVision->Update();
+    dash->PutNumber("Distance to Target", myVision->GetDistance(0));
+    dash->PutNumber("Angle to Target", myVision->GetAngle(0));
+
     for(int x = 0; x <= 100; x++){
     if(stickRight->GetButton(6) && !lastBtn6){
         if(source == 0){

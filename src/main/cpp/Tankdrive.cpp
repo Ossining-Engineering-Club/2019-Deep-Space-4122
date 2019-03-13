@@ -37,6 +37,8 @@ int Tankdrive::GetLeftEncoderRaw(){return leftEncoder->GetRaw();}
 double Tankdrive::GetRightEncoderDist(){
     return rightEncoder->GetDistance();
 }
+void AlignRobotVision(double currentDist, double targetAngle){
+}
 int Tankdrive::GetRightEncoderRaw(){return rightEncoder->GetRaw();}
 void Tankdrive::TurnToHeading(double maxPower, double headingDegrees){
     double turnError = 0.0;

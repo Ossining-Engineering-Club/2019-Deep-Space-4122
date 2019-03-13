@@ -23,6 +23,7 @@ class Tankdrive{
         int GetRightEncoderRaw();
         double GetLeftEncoderDist();
         int GetLeftEncoderRaw();
+        void AlignRobotVision(double currentDist);
         void DriveCurveEncoder(double radius, double degrees, double avgPower, double startupTime, bool stopAtEnd);
         void DriveGyro(double degreesPerInch, double degrees, double avgPower, double timeoutSec);
         void DriveGyroByRadius(double radius, double degrees, double avgPower, double timeoutSec);

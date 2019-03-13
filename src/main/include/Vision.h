@@ -18,6 +18,8 @@ public:
 	double GetX(unsigned int val);		// returns the x value of the tracked image
 	double GetY(unsigned int val);		// returns the y value of the tracked image
 	double GetHeight(unsigned int val);	// returns the height
+	double GetDistance(unsigned int val);
+	double GetAngle(unsigned int val);
 	int GetNumContours(); // returns the number of contours
 	double GetWidth(unsigned int val);	// returns the width
 	~Vision();
