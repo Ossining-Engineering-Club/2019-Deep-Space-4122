@@ -10,7 +10,11 @@ double OECJoystick::GetX(){
     return stick->GetX();
 }
 double OECJoystick::GetY(){
-    return stick->GetY();
+    double yAxis = stick->GetY();
+    if(fabs(yAxis) > 0.045)
+        return yAxis;
+    else
+        return 0.0;
 }
 double OECJoystick::GetZ(){
     return stick->GetZ();

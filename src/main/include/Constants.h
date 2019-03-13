@@ -4,23 +4,25 @@
 
 #define LEFT_ENCODER_CONST 0.0649026
 #define RIGHT_ENCODER_CONST 0.0649026
-#define DRIVEBASE_WIDTH 28.64
+#define DRIVEBASE_WIDTH 22.75
 
-#define STRAIGHT_DRIVE_CORRECTION .935
-#define BACKWARD_DRIVE_CORRECTION 0.0
+#define STRAIGHT_DRIVE_CORRECTION .985
+#define BACKWARD_DRIVE_CORRECTION 1.0
 
 #define STOP_DIST 18.0
 #define STOP_POWER 0.2
 
-#define TURN_GAMMA 1.0//2.25
+
+#define TURN_RADIUS_CORRECTION 0.3//2.25
 
 //PID Constants:
     //Encoder curved driving:
-#define CURVED_KP -0.2//-0.5
-#define CURVED_KI 0.0
-#define CURVED_KD -0.1
+#define CURVED_KP (-0.4)//-0.5
+#define CURVED_KI (-0.00)
+#define CURVED_KD (0.0)
 #define CURVED_CORRECTION 1.0
 
+#define LIFT_TOP_POSITION 1000000.0
     //Gyro curved driving:
 #define GYRO_KP -0.07
 #define GYRO_KI -0.00000005

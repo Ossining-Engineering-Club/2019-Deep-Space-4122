@@ -5,11 +5,12 @@ using namespace std;
 Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, SmartDashboard *dash){
     this->dash = dash;
     pidController = new OECPIDController(CURVED_KP, CURVED_KI, CURVED_KD, CURVED_CORRECTION);
-    LeftFrontDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(1);
-    LeftBackDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(2);
-    RightFrontDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(3);
-    RightBackDrive = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(4);
-    pigeonIMU = new OECPigeonIMU(LeftBackDrive);
+    IMUTalonSRX = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(2);
+    LeftFrontDrive = new rev::CANSparkMax(25, rev::CANSparkMax::MotorType::kBrushless);
+    LeftBackDrive = new rev::CANSparkMax(26, rev::CANSparkMax::MotorType::kBrushless);
+    RightFrontDrive = new rev::CANSparkMax(27, rev::CANSparkMax::MotorType::kBrushless);
+    RightBackDrive = new rev::CANSparkMax(28, rev::CANSparkMax::MotorType::kBrushless);
+    pigeonIMU = new OECPigeonIMU(IMUTalonSRX);
     leftEncoder = new frc::Encoder(leftEncoder1, leftEncoder2, false, CounterBase::EncodingType::k4X);
     rightEncoder = new frc::Encoder(rightEncoder1, rightEncoder2, true, CounterBase::EncodingType::k4X);
     rightEncoder->SetDistancePerPulse(RIGHT_ENCODER_CONST);
@@ -91,10 +92,8 @@ void Tankdrive::DriveStraightGyro(double power, double distInches, double startu
 void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower, double startupTime, bool stopAtEnd){
     double tempPower = 0.0;
     pidController = new OECPIDController(CURVED_KP, CURVED_KI, CURVED_KD, CURVED_CORRECTION);
-    double leftPower = avgPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
-    double rightPower = avgPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
-    leftPower = (abs(leftPower)/leftPower)*pow(abs(leftPower), TURN_GAMMA);
-    rightPower = (abs(rightPower)/rightPower)*pow(abs(rightPower), TURN_GAMMA);
+    double leftPower = avgPower * (1 - 0.5*DRIVEBASE_WIDTH/(radius*TURN_RADIUS_CORRECTION));
+    double rightPower = avgPower * (1 + 0.5*DRIVEBASE_WIDTH/(radius*TURN_RADIUS_CORRECTION));
     double scaleValue = avgPower/(0.5*(leftPower + rightPower));
     //leftPower *= scaleValue;
     //rightPower *= scaleValue;
@@ -125,46 +124,45 @@ void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower
     myTimer->Reset();
     myTimer->Start();
     while(abs(avgDist) < abs(totalDist)){
-        dash->PutNumber("Timer time", myTimer->Get());
+        //dash->PutNumber("Timer time", myTimer->Get());
         if(myTimer->Get() < startupTime){
             tempPower = (myTimer->Get()/startupTime)*avgPower;
-            dash->PutNumber("power", tempPower);
-            leftPower = tempPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
-            rightPower = tempPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
-            dash->PutString("startup status", "in progress");
+            //dash->PutNumber("power", tempPower);
+            leftPower = tempPower * (1 - 0.5*DRIVEBASE_WIDTH/(radius*TURN_RADIUS_CORRECTION));
+            rightPower = tempPower * (1 + 0.5*DRIVEBASE_WIDTH/(radius*TURN_RADIUS_CORRECTION));
+            //dash->PutString("startup status", "in progress");
         }
         else{
-            leftPower = avgPower * (1 - 0.5*DRIVEBASE_WIDTH/radius);
-            rightPower = avgPower * (1 + 0.5*DRIVEBASE_WIDTH/radius);
-            dash->PutString("startup status", "complete");
+            leftPower = avgPower * (1 - 0.5*DRIVEBASE_WIDTH/(radius*TURN_RADIUS_CORRECTION));
+            rightPower = avgPower * (1 + 0.5*DRIVEBASE_WIDTH/(radius*TURN_RADIUS_CORRECTION));
+            //dash->PutString("startup status", "complete");
         }
         leftEnc = GetLeftEncoderDist();
         rightEnc = GetRightEncoderDist();
-        dash->PutNumber("leftEncoder", GetLeftEncoderDist());
-        dash->PutNumber("rightEncoder", GetRightEncoderDist());
+        //dash->PutNumber("leftEncoder", GetLeftEncoderDist());
+        //dash->PutNumber("rightEncoder", GetRightEncoderDist());
         avgDist = (leftEnc + rightEnc)/2.0;
         targetRight = avgDist + (avgDist*DRIVEBASE_WIDTH)/(2.0*radius);
         targetLeft = avgDist - (avgDist*DRIVEBASE_WIDTH)/(2.0*radius);
         error = (leftEnc - targetLeft) - (rightEnc-targetRight);
-        dash->PutNumber("Error", error);
+        //dash->PutNumber("Error", error);
         correction = pidController->GetPIDCorrection(error);
-        dash->PutNumber("Left Actual", leftPower + correction);
-        dash->PutNumber("Right Actual", rightPower - correction);
         if(abs(avgDist) > 0.5*abs(totalDist)){
             leftTotal += leftPower + correction;
             rightTotal += rightPower - correction;
             count ++;
         }
-        SetPower(leftPower + correction, rightPower - correction);
+        SetPower(leftPower* (1 + correction), rightPower * (1 - correction));
     }
 
+    dash->PutNumber("Correction", correction);
     dash->PutNumber("Left Average", leftTotal/count);
     dash->PutNumber("Right Average", rightTotal/count);
     if(stopAtEnd)
         SetPower(0.0,0.0);
 }
 ctre::phoenix::motorcontrol::can::WPI_TalonSRX* Tankdrive::GetTalonSRX(){
-    return LeftBackDrive;
+    return IMUTalonSRX;
 }
 void Tankdrive::DriveGyro(double degreesPerInch, double degrees, double avgPower, double timeoutSec){
     pidController->ResetIntegral();

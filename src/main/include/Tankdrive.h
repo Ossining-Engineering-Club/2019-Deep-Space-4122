@@ -1,5 +1,6 @@
 #pragma once
 #include <frc/WPIlib.h>
+#include <rev/CANSparkMax.h>
 #include "Constants.h"
 #include "OECPigeonIMU.h"
 #include "OECPIDController.h"
@@ -30,10 +31,11 @@ class Tankdrive{
         SmartDashboard *dash;
         OECPIDController *pidController;
         OECPigeonIMU *pigeonIMU;
-        ctre::phoenix::motorcontrol::can::WPI_TalonSRX *LeftFrontDrive;
-        ctre::phoenix::motorcontrol::can::WPI_TalonSRX *LeftBackDrive;
-        ctre::phoenix::motorcontrol::can::WPI_TalonSRX *RightFrontDrive;
-        ctre::phoenix::motorcontrol::can::WPI_TalonSRX *RightBackDrive;
+        ctre::phoenix::motorcontrol::can::WPI_TalonSRX *IMUTalonSRX;
+        rev::CANSparkMax *LeftFrontDrive;
+        rev::CANSparkMax *LeftBackDrive;
+        rev::CANSparkMax *RightFrontDrive;
+        rev::CANSparkMax *RightBackDrive;
         Encoder *leftEncoder;
         Encoder *rightEncoder;
         double throttle;

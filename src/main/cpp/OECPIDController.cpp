@@ -24,6 +24,7 @@ pidTimer()
     iGain = kI;
     dGain = kD;
     max = maxCorrection;
+    isFirstRun = true;
 }
 
 void OECPIDController::SetPIDConstants(double kP, double kI, double kD, double maxCorrection)
