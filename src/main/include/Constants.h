@@ -34,10 +34,12 @@
 #define STRAIGHT_KD 0.0
 #define STRAIGHT_CORRECTION 1.0
     //Pivots
-#define TURN_KP -0.2
+#define TURN_KP 0.2
 #define TURN_KI 0.0
 #define TURN_KD -0.1
 #define TURN_ACCURACY 1.5
+
+#define PIXEL_ACCURACY 5.0
 
 //Utilities:
 #define PI 3.1415926535897932384626433832795

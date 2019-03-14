@@ -2,7 +2,9 @@
 #include <iostream>
 
 using namespace std;
-Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, SmartDashboard *dash){
+Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, SmartDashboard *dash):
+    vision()
+{
     this->dash = dash;
     pidController = new OECPIDController(CURVED_KP, CURVED_KI, CURVED_KD, CURVED_CORRECTION);
     IMUTalonSRX = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(2);
@@ -10,7 +12,10 @@ Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEnco
     LeftBackDrive = new rev::CANSparkMax(26, rev::CANSparkMax::MotorType::kBrushless);
     RightFrontDrive = new rev::CANSparkMax(27, rev::CANSparkMax::MotorType::kBrushless);
     RightBackDrive = new rev::CANSparkMax(28, rev::CANSparkMax::MotorType::kBrushless);
-    pigeonIMU = new OECPigeonIMU(IMUTalonSRX);
+    pigeonIMU = new OECPigeonIMU(01); //CHANGE THIS BACK!!!
+    pigeonIMU->ResetAngle();
+    rightNeoEncoder = new rev::CANEncoder(27);
+    rightNeoEncoder = new rev::CANEncoder(25);
     leftEncoder = new frc::Encoder(leftEncoder1, leftEncoder2, false, CounterBase::EncodingType::k4X);
     rightEncoder = new frc::Encoder(rightEncoder1, rightEncoder2, true, CounterBase::EncodingType::k4X);
     rightEncoder->SetDistancePerPulse(RIGHT_ENCODER_CONST);
@@ -33,14 +38,56 @@ void Tankdrive::SetThrottle(double throttle){
 double Tankdrive::GetLeftEncoderDist(){
     return leftEncoder->GetDistance();
 }
+
 int Tankdrive::GetLeftEncoderRaw(){return leftEncoder->GetRaw();}
 double Tankdrive::GetRightEncoderDist(){
     return rightEncoder->GetDistance();
 }
-void AlignRobotVision(double currentDist, double targetAngle){
+void Tankdrive::AlignRobotVision(double currentDist, double targetAngle){
+    dash->PutNumber("Current Heading", pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees));
+    TurnToTarget(0.05);
+    vision.Update();
+    double dist = vision.GetDistance(0);
+    double angle = fmod(fmod(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees), 360.0)+360.0, 360.0); - targetAngle;
+    double targetHeading = targetAngle + angle * ((dist+36.0)/24.0);
+    double driveDist = dist-24.0;
+    double power;
+    if(targetHeading > fmod(fmod(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees), 360.0)+360.0, 360.0)){
+        power = -0.05;
+    }
+    else
+        power = 0.05;
+    while(abs(targetHeading-fmod(fmod(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees), 360.0)+360.0, 360.0)) < 2.0){
+        SetPower(power, -1.0*power);
+    }
+    if(targetAngle > fmod(fmod(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees), 360.0)+360.0, 360.0)){
+        power = -0.05;
+    }
+    else
+        power = 0.05;
+    while(abs(targetAngle-fmod(fmod(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees), 360.0)+360.0, 360.0)) < 2.0){
+        SetPower(power, -1.0*power);
+    }
+    DriveStraightGyro(0.1, driveDist, 0.0, true);
+}
+
+
+
+void Tankdrive::TurnToTarget(double power){
+    vision.Update();
+    double dist = vision.GetDistance(0);
+    dash->PutNumber("Distance", dist);
+    double xPos = (vision.GetX(0) + vision.GetX(1)) / 2;
+    dash->PutNumber("X Position", xPos);
+    while(xPos <= 160 - PIXEL_ACCURACY || xPos >= 160 + PIXEL_ACCURACY){
+        SetPower(-1.0*power * (160-xPos) * (0.02 * dist) * (0.02), power *(160-xPos) * (0.02) * (0.02 * dist));
+        vision.Update();
+        xPos = (vision.GetX(0) + vision.GetX(1)) / 2;
+    }
 }
 int Tankdrive::GetRightEncoderRaw(){return rightEncoder->GetRaw();}
 void Tankdrive::TurnToHeading(double maxPower, double headingDegrees){
+    dash->PutNumber("Current Heading", pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees));
     double turnError = 0.0;
     double correction = 0.0;
     pidController = new OECPIDController(TURN_KP, TURN_KI, TURN_KD, maxPower);

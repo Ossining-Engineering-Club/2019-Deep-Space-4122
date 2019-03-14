@@ -5,6 +5,7 @@
 #include "OECPigeonIMU.h"
 #include "OECPIDController.h"
 #include <ctre/Phoenix.h>
+#include "Vision.h"
 using namespace frc;
 class Tankdrive{
     public:
@@ -23,12 +24,14 @@ class Tankdrive{
         int GetRightEncoderRaw();
         double GetLeftEncoderDist();
         int GetLeftEncoderRaw();
-        void AlignRobotVision(double currentDist);
+        void AlignRobotVision(double currentDist, double targetAngle);
+        void TurnToTarget(double power);
         void DriveCurveEncoder(double radius, double degrees, double avgPower, double startupTime, bool stopAtEnd);
         void DriveGyro(double degreesPerInch, double degrees, double avgPower, double timeoutSec);
         void DriveGyroByRadius(double radius, double degrees, double avgPower, double timeoutSec);
         ctre::phoenix::motorcontrol::can::WPI_TalonSRX* GetTalonSRX();
     private:
+        Vision vision;
         SmartDashboard *dash;
         OECPIDController *pidController;
         OECPigeonIMU *pigeonIMU;
@@ -37,6 +40,8 @@ class Tankdrive{
         rev::CANSparkMax *LeftBackDrive;
         rev::CANSparkMax *RightFrontDrive;
         rev::CANSparkMax *RightBackDrive;
+        rev::CANEncoder *leftNeoEncoder();
+        rev::CANEncoder *rightNeoEncoder();
         Encoder *leftEncoder;
         Encoder *rightEncoder;
         double throttle;

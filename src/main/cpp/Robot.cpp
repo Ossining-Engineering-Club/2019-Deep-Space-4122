@@ -37,10 +37,19 @@ void Robot::RobotInit()
 }
 
 void Robot::AutonomousInit() {
-    tankdrive->DriveStraightGyro(0.6, 80.0, 0.25, false);
-    tankdrive->DriveStraightGyro(0.3, 15.0, 0.0, false);
-    tankdrive->DriveCurveEncoder(-40, 50, 0.3, 0.0, false);
-    tankdrive->DriveCurveEncoder(40, 43, 0.3, 0.0, true);
+    //tankdrive->DriveStraightGyro(0.6, 80.0, 0.25, false);
+    //tankdrive->DriveStraightGyro(0.3, 15.0, 0.0, false);
+    //tankdrive->DriveCurveEncoder(-40, 50, 0.3, 0.0, false);
+    //tankdrive->DriveCurveEncoder(40, 43, 0.3, 0.0, true);
+    tankdrive->ResetEncoders();
+    tankdrive->DriveStraightGyro(0.3, 80, 0.25, true);
+    dash->PutNumber("Left Encoder Final", tankdrive->GetLeftEncoderDist());
+    dash->PutNumber("Right Encoder Final", tankdrive->GetRightEncoderDist());
+
+    //tankdrive->AlignRobotVision(0.0, 0.0);
+    //tankdrive->TurnToHeading(0.2, 90.0);
+
+    //tankdrive->SetPower(0.0,0.0);
 
 }
 void Robot::AutonomousPeriodic() {
