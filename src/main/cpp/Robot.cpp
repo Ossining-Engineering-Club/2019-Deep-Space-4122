@@ -32,17 +32,53 @@ void Robot::RobotInit()
     stickRight = new OECJoystick(1);
     stickUtil = new OECJoystick(2);
 
-    dash->PutString("Version:", "0.9");
+    dash->PutString("Version:", VERSION_NUMBER);
     dash->PutString("Init Status", "Complete");
 }
 
 void Robot::AutonomousInit() {
+    DigitalInput CenterSideDIO(8);
+    DigitalInput LeftRightDIO(9);
+
+    if(!CenterSideDIO.Get()){
+        double RightLeft = 1.0;
+        if(LeftRightDIO.Get()){RightLeft = -1.0;}
+        tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, CENTER_STRAIGHT_DIST_1, .25, false);
+        tankdrive->TurnToHeading(TURN_SPEED_1, -1.0 * RightLeft * CENTER_TURN_HEADING_1, 1.5);
+        tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, CENTER_STRAIGHT_DIST_2, .25, false);
+        tankdrive->TurnToHeading(TURN_SPEED_1, RightLeft * CENTER_TURN_HEADING_1, 1.5);
+    }
+    else{
+        double RightLeft = 1.0;
+        if(LeftRightDIO.Get()){RightLeft = -1.0;}
+
+        tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, SIDE_STRAIGHT_DIST_1, .25, false);
+        tankdrive->TurnToHeading(TURN_SPEED_1, -1.0 * RightLeft * SIDE_TURN_HEADING_1, 1.5);
+        tankdrive->DriveStraightGyro(STRAIGHT_SPEED_2, SIDE_STRAIGHT_DIST_2, 0.25, true);
+        tankdrive->TurnToHeading(TURN_SPEED_2, RightLeft * SIDE_TURN_HEADING_2, 1.5);
+        tankdrive->DriveVision(36.0, STRAIGHT_SPEED_3);
+        tankdrive->SetPower(0.0, 0.0);
+        //drop arm
+        tankdrive->TurnToHeading(TURN_SPEED_3, RightLeft * FINAL_TURN_HEADING, 1.5);
+    }
     //tankdrive->DriveStraightGyro(0.6, 80.0, 0.25, false);
     //tankdrive->DriveStraightGyro(0.3, 15.0, 0.0, false);
     //tankdrive->DriveCurveEncoder(-40, 50, 0.3, 0.0, false);
     //tankdrive->DriveCurveEncoder(40, 43, 0.3, 0.0, true);
-    tankdrive->ResetEncoders();
-    tankdrive->DriveStraightGyro(0.3, 80, 0.25, true);
+    
+    //tankdrive->DriveStraightGyro(0.3, 80, 0.25, true);
+    //tankdrive->DriveVision(24, 0.2);
+    /*dash->PutNumber("Status", 0);
+    tankdrive->DriveVision(36.0, 0.3);
+    dash->PutNumber("Status", 1);
+    tankdrive->SetPower(0.0,0.0);
+    dash->PutNumber("Status", 2);
+    Wait(0.5);
+    dash->PutNumber("Status", 3);
+    tankdrive->DriveStraightGyro(0.2, 12.0, 0.0, false);
+    dash->PutNumber("Status", 4);
+    tankdrive->SetPower(0.0, 0.0);
+    dash->PutNumber("Status", 5);*/
     dash->PutNumber("Left Encoder Final", tankdrive->GetLeftEncoderDist());
     dash->PutNumber("Right Encoder Final", tankdrive->GetRightEncoderDist());
 

@@ -15,7 +15,7 @@ class Tankdrive{
         Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, SmartDashboard *dash);
         OECPigeonIMU* GetPigeonIMU();
         void DriveStraightGyro(double power, double distInches, double startupTime, bool stopAtEnd);
-        void TurnToHeading(double maxPower, double headingDegrees);
+        void TurnToHeading(double maxPower, double headingDegrees, float TimeOut);
         void SetPower(double leftPower, double rightPower);
         void SetThrottle(double throttle);
         void ResetEncoders();
@@ -25,12 +25,15 @@ class Tankdrive{
         double GetLeftEncoderDist();
         int GetLeftEncoderRaw();
         void AlignRobotVision(double currentDist, double targetAngle);
+        void DriveVision(double targetDist, double power);
+        void PIDSetPower(double leftPower, double rightPower);
         void TurnToTarget(double power);
         void DriveCurveEncoder(double radius, double degrees, double avgPower, double startupTime, bool stopAtEnd);
         void DriveGyro(double degreesPerInch, double degrees, double avgPower, double timeoutSec);
         void DriveGyroByRadius(double radius, double degrees, double avgPower, double timeoutSec);
         ctre::phoenix::motorcontrol::can::WPI_TalonSRX* GetTalonSRX();
     private:
+        frc::Timer AutoTimer;
         Vision vision;
         SmartDashboard *dash;
         OECPIDController *pidController;
@@ -40,10 +43,10 @@ class Tankdrive{
         rev::CANSparkMax *LeftBackDrive;
         rev::CANSparkMax *RightFrontDrive;
         rev::CANSparkMax *RightBackDrive;
-        rev::CANEncoder *leftNeoEncoder();
-        rev::CANEncoder *rightNeoEncoder();
-        Encoder *leftEncoder;
-        Encoder *rightEncoder;
+        rev::CANEncoder *leftNeoEncoder;
+        rev::CANEncoder *rightNeoEncoder;
+        frc::Encoder *leftEncoder;
+        frc::Encoder *rightEncoder;
         double throttle;
         Timer *myTimer;
         LoopMode loopMode;

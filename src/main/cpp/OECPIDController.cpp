@@ -15,7 +15,7 @@ double diffCorrection = 0.0;
 double lastTime = 0.0;              // Time at last loop in milliseconds
 double lastError = 0.0;             // Error at last loop
 
-double isFirstRun = true;
+bool isFirstRun = true;
 
 OECPIDController::OECPIDController(double kP, double kI, double kD, double maxCorrection):
 pidTimer()
