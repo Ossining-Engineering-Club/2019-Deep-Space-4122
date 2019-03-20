@@ -43,7 +43,4 @@ private:
   Relay *lightRelay;
   SmartDashboard *dash;
   Vision *myVision;
-  OECJoystick *stickLeft;
-  OECJoystick *stickRight;
-  OECJoystick *stickUtil;
 };

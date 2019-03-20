@@ -3,12 +3,17 @@
 #include <rev/CANSparkMax.h>
 #include "Constants.h"
 #include "OECPigeonIMU.h"
+#include "OECJoystick.h"
 #include "OECPIDController.h"
 #include <ctre/Phoenix.h>
 #include "Vision.h"
 using namespace frc;
 class Tankdrive{
     public:
+        bool AutonOverride;
+        OECJoystick *stickLeft;
+        OECJoystick *stickRight;
+        OECJoystick *stickUtil;
         enum LoopMode{internal = 0, external = 1};
         enum DriveSide{left = 0, right = 1};
 

@@ -28,9 +28,9 @@ void Robot::RobotInit()
 
     myVision = new Vision();
 
-    stickLeft = new OECJoystick(0);
-    stickRight = new OECJoystick(1);
-    stickUtil = new OECJoystick(2);
+    tankdrive->stickLeft = new OECJoystick(0);
+    tankdrive->stickRight = new OECJoystick(1);
+    tankdrive->stickUtil = new OECJoystick(2);
 
     dash->PutString("Version:", VERSION_NUMBER);
     dash->PutString("Init Status", "Complete");
@@ -61,56 +61,20 @@ void Robot::AutonomousInit() {
         //drop arm
         tankdrive->TurnToHeading(TURN_SPEED_3, RightLeft * FINAL_TURN_HEADING, 1.5);
     }
-    //tankdrive->DriveStraightGyro(0.6, 80.0, 0.25, false);
-    //tankdrive->DriveStraightGyro(0.3, 15.0, 0.0, false);
-    //tankdrive->DriveCurveEncoder(-40, 50, 0.3, 0.0, false);
-    //tankdrive->DriveCurveEncoder(40, 43, 0.3, 0.0, true);
-    
-    //tankdrive->DriveStraightGyro(0.3, 80, 0.25, true);
-    //tankdrive->DriveVision(24, 0.2);
-    /*dash->PutNumber("Status", 0);
-    tankdrive->DriveVision(36.0, 0.3);
-    dash->PutNumber("Status", 1);
-    tankdrive->SetPower(0.0,0.0);
-    dash->PutNumber("Status", 2);
-    Wait(0.5);
-    dash->PutNumber("Status", 3);
-    tankdrive->DriveStraightGyro(0.2, 12.0, 0.0, false);
-    dash->PutNumber("Status", 4);
-    tankdrive->SetPower(0.0, 0.0);
-    dash->PutNumber("Status", 5);*/
-    dash->PutNumber("Left Encoder Final", tankdrive->GetLeftEncoderDist());
-    dash->PutNumber("Right Encoder Final", tankdrive->GetRightEncoderDist());
-
-    //tankdrive->AlignRobotVision(0.0, 0.0);
-    //tankdrive->TurnToHeading(0.2, 90.0);
-
-    //tankdrive->SetPower(0.0,0.0);
-
 }
-void Robot::AutonomousPeriodic() {
-}
-
-void Robot::TeleopInit() {
-    lightRelay->Set(frc::Relay::Value::kOn);
-  //  tankdrive->ResetEncoders();
-  //  pointer2msLifeCam1->SetExposureAuto();
-}
-
 double driveThrottle = 0.0;
 double stiltsThrottle = 0.0;
 double liftThrottle = 0.0;
 bool lastBtn6 = false;
 bool lastBtn11 = false;
 int source = 0;
-void Robot::TeleopPeriodic() {
-
+void Robot::AutonomousPeriodic() {
     myVision->Update();
     dash->PutNumber("Distance to Target", myVision->GetDistance(0));
     dash->PutNumber("Angle to Target", myVision->GetAngle(0));
 
     for(int x = 0; x <= 100; x++){
-    if(stickRight->GetButton(6) && !lastBtn6){
+    if(tankdrive->stickRight->GetButton(6) && !lastBtn6){
         if(source == 0){
             server.SetSource(msLifeCam1);
             source = 1;
@@ -120,56 +84,134 @@ void Robot::TeleopPeriodic() {
             source = 0;
         }
     }
-    if(lastBtn11 && !stickUtil->GetButton(11)){
+    if(lastBtn11 && !tankdrive->stickUtil->GetButton(11)){
         //arm = new Arm(dash);
     }
-    lastBtn11 = stickUtil->GetButton(11);
+    lastBtn11 = tankdrive->stickUtil->GetButton(11);
     
 
-    driveThrottle = stickLeft->GetZ() / -2.0 + 0.5;
-    tankdrive->SetPower(-1.0 * driveThrottle * stickLeft->GetY(), -1.0 * driveThrottle * stickRight->GetY());
+    driveThrottle = tankdrive->stickLeft->GetZ() / -2.0 + 0.5;
+    tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
 
-    stiltsThrottle = stickRight -> GetZ() / -2.0 + 0.5;
-    if(stickLeft->GetButton(3) && !stickLeft -> GetButton(2)){}
+    stiltsThrottle = tankdrive->stickRight -> GetZ() / -2.0 + 0.5;
+    if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){}
         //stilts->SetFrontPower(stiltsThrottle);
-    else if(!stickLeft->GetButton(3) && stickLeft -> GetButton(2)){}
+    else if(!tankdrive->stickLeft->GetButton(3) && tankdrive->stickLeft -> GetButton(2)){}
         //stilts->SetFrontPower(-1.0 * stiltsThrottle);
     else{}
         //stilts->SetFrontPower(0.0);
-    if(stickRight->GetButton(3) && !stickRight -> GetButton(2)){}
+    if(tankdrive->stickRight->GetButton(3) && !tankdrive->stickRight -> GetButton(2)){}
         //stilts->SetRearPower(stiltsThrottle);
-    else if(!stickRight->GetButton(3) && stickRight -> GetButton(2)){}
+    else if(!tankdrive->stickRight->GetButton(3) && tankdrive->stickRight -> GetButton(2)){}
         //stilts->SetRearPower(-1.0 * stiltsThrottle);
     else{}
         //stilts->SetRearPower(0.0);
-    if(stickLeft->GetButton(4)){}
+    if(tankdrive->stickLeft->GetButton(4)){}
         //stilts->SetDrivePower(0.5);
-    else if(stickLeft->GetButton(5)){}
+    else if(tankdrive->stickLeft->GetButton(5)){}
         //stilts->SetDrivePower(-0.5);
     else{}
         //stilts->SetDrivePower(0.0);
 
-    liftThrottle = stickUtil->GetZ() / -2.0 + 0.5;
+    liftThrottle = tankdrive->stickUtil->GetZ() / -2.0 + 0.5;
     
-    if(stickUtil->GetButton(3) && !stickUtil ->GetButton(2)){}
+    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2)){}
         //lift->SetPower(liftThrottle);
-    else if(!stickUtil->GetButton(3) && stickUtil ->GetButton(2)){}
+    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2)){}
         //lift->SetPower(-1.0 * liftThrottle);
     else
         //lift -> SetPower(0.0);
 
-    //arm->SetPower(stickUtil->GetY(), stickUtil->GetButton(10));
+    //arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
-    if(stickUtil->GetButton(4) && !stickUtil->GetButton(5)){}
+    if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){}
         //intake->SetPower(0.35);
-    else if(!stickUtil->GetButton(4) && stickUtil->GetButton(5)){}
+    else if(!tankdrive->stickUtil->GetButton(4) && tankdrive->stickUtil->GetButton(5)){}
         //intake->SetPower(-0.35);
     else{}
         //intake->SetPower(0.0);
 
         Wait(0.005);
     }
-    dash->PutNumber("Arm Power", stickUtil->GetY());
+    dash->PutNumber("Arm Power", tankdrive->stickUtil->GetY());
+    dash->PutNumber("Drive Throttle", driveThrottle);
+    dash->PutNumber("Lift Throttle", liftThrottle);
+    dash->PutNumber("Stilts Throttle", stiltsThrottle);
+    //dash->PutNumber("Lift Encoder Position", lift->GetEncoderPosition());
+}
+
+void Robot::TeleopInit() {
+  //  tankdrive->ResetEncoders();
+  //  pointer2msLifeCam1->SetExposureAuto();
+}
+
+void Robot::TeleopPeriodic() {
+
+    myVision->Update();
+    dash->PutNumber("Distance to Target", myVision->GetDistance(0));
+    dash->PutNumber("Angle to Target", myVision->GetAngle(0));
+
+    for(int x = 0; x <= 100; x++){
+    if(tankdrive->stickRight->GetButton(6) && !lastBtn6){
+        if(source == 0){
+            server.SetSource(msLifeCam1);
+            source = 1;
+        }
+        else if(source == 1){
+            server.SetSource(msLifeCam2);
+            source = 0;
+        }
+    }
+    if(lastBtn11 && !tankdrive->stickUtil->GetButton(11)){
+        //arm = new Arm(dash);
+    }
+    lastBtn11 = tankdrive->stickUtil->GetButton(11);
+    
+
+    driveThrottle = tankdrive->stickLeft->GetZ() / -2.0 + 0.5;
+    tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
+
+    stiltsThrottle = tankdrive->stickRight -> GetZ() / -2.0 + 0.5;
+    if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){}
+        //stilts->SetFrontPower(stiltsThrottle);
+    else if(!tankdrive->stickLeft->GetButton(3) && tankdrive->stickLeft -> GetButton(2)){}
+        //stilts->SetFrontPower(-1.0 * stiltsThrottle);
+    else{}
+        //stilts->SetFrontPower(0.0);
+    if(tankdrive->stickRight->GetButton(3) && !tankdrive->stickRight -> GetButton(2)){}
+        //stilts->SetRearPower(stiltsThrottle);
+    else if(!tankdrive->stickRight->GetButton(3) && tankdrive->stickRight -> GetButton(2)){}
+        //stilts->SetRearPower(-1.0 * stiltsThrottle);
+    else{}
+        //stilts->SetRearPower(0.0);
+    if(tankdrive->stickLeft->GetButton(4)){}
+        //stilts->SetDrivePower(0.5);
+    else if(tankdrive->stickLeft->GetButton(5)){}
+        //stilts->SetDrivePower(-0.5);
+    else{}
+        //stilts->SetDrivePower(0.0);
+
+    liftThrottle = tankdrive->stickUtil->GetZ() / -2.0 + 0.5;
+    
+    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2)){}
+        //lift->SetPower(liftThrottle);
+    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2)){}
+        //lift->SetPower(-1.0 * liftThrottle);
+    else
+        //lift -> SetPower(0.0);
+
+    //arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
+
+    if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){}
+        //intake->SetPower(0.35);
+    else if(!tankdrive->stickUtil->GetButton(4) && tankdrive->stickUtil->GetButton(5)){}
+        //intake->SetPower(-0.35);
+    else{}
+        //intake->SetPower(0.0);
+
+        Wait(0.005);
+    }
+    dash->PutNumber("Arm Power", tankdrive->stickUtil->GetY());
     dash->PutNumber("Drive Throttle", driveThrottle);
     dash->PutNumber("Lift Throttle", liftThrottle);
     dash->PutNumber("Stilts Throttle", stiltsThrottle);

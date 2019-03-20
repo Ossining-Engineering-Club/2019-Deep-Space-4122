@@ -12,6 +12,7 @@ Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEnco
     vision(),
     AutoTimer()
 {
+    AutonOverride = false;
     leftDrivePID = new OECPIDController(DRIVE_PID_P, DRIVE_PID_I, DRIVE_PID_D, 1.0);
     rightDrivePID = new OECPIDController(DRIVE_PID_P, DRIVE_PID_I, DRIVE_PID_D, 1.0);
     visionPID = new OECPIDController(VISION_P, VISION_I, VISION_D, 1.0);
@@ -76,6 +77,10 @@ void Tankdrive::AlignRobotVision(double currentDist, double targetAngle){
     else
         power = 0.05;
     while(abs(targetHeading-fmod(fmod(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees), 360.0)+360.0, 360.0)) < 2.0){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         SetPower(power, -1.0*power);
     }
     if(targetAngle > fmod(fmod(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees), 360.0)+360.0, 360.0)){
@@ -84,6 +89,10 @@ void Tankdrive::AlignRobotVision(double currentDist, double targetAngle){
     else
         power = 0.05;
     while(abs(targetAngle-fmod(fmod(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees), 360.0)+360.0, 360.0)) < 2.0){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         SetPower(power, -1.0*power);
     }
     DriveStraightGyro(0.1, driveDist, 0.0, true);
@@ -98,6 +107,10 @@ void Tankdrive::TurnToTarget(double power){
     double xPos = (vision.GetX(0) + vision.GetX(1)) / 2;
     dash->PutNumber("X Position", xPos);
     while(xPos <= 160 - PIXEL_ACCURACY || xPos >= 160 + PIXEL_ACCURACY){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         SetPower(-1.0*power * (160-xPos) * (0.02 * dist) * (0.02), power *(160-xPos) * (0.02) * (0.02 * dist));
         vision.Update();
         xPos = (vision.GetX(0) + vision.GetX(1)) / 2;
@@ -111,6 +124,10 @@ void Tankdrive::DriveVision(double targetDist, double power){
     double lastError = 0.0;
 
     while(distance > targetDist){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
     vision.Update();
     double visionerror = (vision.GetX(0) + vision.GetX(1))/2.0 - 160.0;
     distance = (vision.GetDistance(0) + vision.GetDistance(1))/2.0;
@@ -135,6 +152,10 @@ void Tankdrive::TurnToHeading(double speed, double angle, float TimeOut){
     double correction = 0.0;
     pidController = new OECPIDController(TURN_KP, TURN_KI, TURN_KD, maxPower);
     while(abs(headingDegrees-pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees)) > TURN_ACCURACY){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         correction = pidController->GetPIDCorrection(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees)-headingDegrees);
         if(correction > 0.0)
             SetPower(correction, 0.0);
@@ -153,6 +174,10 @@ void Tankdrive::TurnToHeading(double speed, double angle, float TimeOut){
 
     while (fabs(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees) - initAngle) <= fabs(angle)  && AutoTimer.Get() <= TimeOut)	//When the gyroscope gives a reading below/equal to 45
 	{
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
 	    Wait(0.001);
 	}
     SetPower(0.0, 0.0);
@@ -171,12 +196,20 @@ void Tankdrive::DriveStraightGyro(double power, double distInches, double startu
     myTimer->Reset();
     myTimer->Start();
     while(startupTime > myTimer->Get() && abs(GetLeftEncoderDist() + GetRightEncoderDist()) < abs(2.0*distInches) - 2.0*STOP_DIST){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         gyroError = pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees) - startHeading;
         pow = (myTimer->Get()/startupTime)*power;
         correction = pidController->GetPIDCorrection(gyroError);
         SetPower(pow + correction, pow - correction);
     }
     while(abs(GetLeftEncoderDist() + GetRightEncoderDist()) < abs(2.0*distInches) - 2.0*STOP_DIST){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         gyroError = pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees) - startHeading;
         correction = pidController->GetPIDCorrection(gyroError);
         SetPower(power + correction, power - correction);
@@ -193,6 +226,10 @@ void Tankdrive::DriveStraightGyro(double power, double distInches, double startu
     }
 
     while(abs(GetLeftEncoderDist() + GetRightEncoderDist()) < abs(2.0*distInches)){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         correction = pidController->GetPIDCorrection(gyroError);
         SetPower(pow + correction, pow - correction);
     }
@@ -234,6 +271,10 @@ void Tankdrive::DriveCurveEncoder(double radius, double degrees, double avgPower
     myTimer->Reset();
     myTimer->Start();
     while(abs(avgDist) < abs(totalDist)){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         //dash->PutNumber("Timer time", myTimer->Get());
         if(myTimer->Get() < startupTime){
             tempPower = (myTimer->Get()/startupTime)*avgPower;
@@ -292,6 +333,10 @@ void Tankdrive::DriveGyro(double degreesPerInch, double degrees, double avgPower
     pigeonIMU->ResetAngle();
     SetPower(leftPower, rightPower);
     while(abs(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees)) < abs(degrees)){
+        if(stickRight->GetButton(1))
+            AutonOverride = true;
+        if(AutonOverride)
+            break;
         double avgDist = GetLeftEncoderDist()/2.0+GetRightEncoderDist()/2.0;
         double correction = pidController->GetPIDCorrection(pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees) - avgDist*degreesPerInch);
         SetPower(leftPower - correction, rightPower + correction);
