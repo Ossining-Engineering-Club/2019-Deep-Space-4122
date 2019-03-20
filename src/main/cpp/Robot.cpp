@@ -45,6 +45,7 @@ void Robot::AutonomousInit() {
         if(LeftRightDIO.Get()){RightLeft = -1.0;}
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, CENTER_STRAIGHT_DIST_1, .25, false);
         tankdrive->TurnToHeading(TURN_SPEED_1, -1.0 * RightLeft * CENTER_TURN_HEADING_1, 1.5);
+        //drop arm
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, CENTER_STRAIGHT_DIST_2, .25, false);
         tankdrive->TurnToHeading(TURN_SPEED_1, RightLeft * CENTER_TURN_HEADING_1, 1.5);
     }
@@ -68,6 +69,8 @@ double liftThrottle = 0.0;
 bool lastBtn6 = false;
 bool lastBtn11 = false;
 int source = 0;
+
+
 void Robot::AutonomousPeriodic() {
     myVision->Update();
     dash->PutNumber("Distance to Target", myVision->GetDistance(0));
@@ -85,7 +88,7 @@ void Robot::AutonomousPeriodic() {
         }
     }
     if(lastBtn11 && !tankdrive->stickUtil->GetButton(11)){
-        //arm = new Arm(dash);
+        arm = new Arm(dash);
     }
     lastBtn11 = tankdrive->stickUtil->GetButton(11);
     
@@ -94,55 +97,67 @@ void Robot::AutonomousPeriodic() {
     tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
 
     stiltsThrottle = tankdrive->stickRight -> GetZ() / -2.0 + 0.5;
-    if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){}
-        //stilts->SetFrontPower(stiltsThrottle);
-    else if(!tankdrive->stickLeft->GetButton(3) && tankdrive->stickLeft -> GetButton(2)){}
-        //stilts->SetFrontPower(-1.0 * stiltsThrottle);
-    else{}
-        //stilts->SetFrontPower(0.0);
-    if(tankdrive->stickRight->GetButton(3) && !tankdrive->stickRight -> GetButton(2)){}
-        //stilts->SetRearPower(stiltsThrottle);
-    else if(!tankdrive->stickRight->GetButton(3) && tankdrive->stickRight -> GetButton(2)){}
-        //stilts->SetRearPower(-1.0 * stiltsThrottle);
-    else{}
-        //stilts->SetRearPower(0.0);
-    if(tankdrive->stickLeft->GetButton(4)){}
-        //stilts->SetDrivePower(0.5);
-    else if(tankdrive->stickLeft->GetButton(5)){}
-        //stilts->SetDrivePower(-0.5);
-    else{}
-        //stilts->SetDrivePower(0.0);
+    if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){
+        stilts->SetFrontPower(stiltsThrottle);
+    }
+    else if(!tankdrive->stickLeft->GetButton(3) && tankdrive->stickLeft -> GetButton(2)){
+        stilts->SetFrontPower(-1.0 * stiltsThrottle);
+    }
+    else{
+        stilts->SetFrontPower(0.0);
+    }
+    if(tankdrive->stickRight->GetButton(3) && !tankdrive->stickRight -> GetButton(2)){
+        stilts->SetRearPower(stiltsThrottle);
+    }
+    else if(!tankdrive->stickRight->GetButton(3) && tankdrive->stickRight -> GetButton(2)){
+        stilts->SetRearPower(-1.0 * stiltsThrottle);
+    }
+    else{
+        stilts->SetRearPower(0.0);
+    }
+    if(tankdrive->stickLeft->GetButton(4)){
+        stilts->SetDrivePower(0.5);
+    }
+    else if(tankdrive->stickLeft->GetButton(5)){
+        stilts->SetDrivePower(-0.5);
+    }
+    else{
+        stilts->SetDrivePower(0.0);
+    }
 
     liftThrottle = tankdrive->stickUtil->GetZ() / -2.0 + 0.5;
     
-    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2)){}
-        //lift->SetPower(liftThrottle);
-    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2)){}
-        //lift->SetPower(-1.0 * liftThrottle);
-    else
-        //lift -> SetPower(0.0);
+    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2)){
+        lift->SetPower(liftThrottle);
+    }
+    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2)){
+        lift->SetPower(-1.0 * liftThrottle);
+    }
+    else{
+        lift -> SetPower(0.0);
+    }
 
-    //arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
+    arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
-    if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){}
-        //intake->SetPower(0.35);
-    else if(!tankdrive->stickUtil->GetButton(4) && tankdrive->stickUtil->GetButton(5)){}
-        //intake->SetPower(-0.35);
-    else{}
-        //intake->SetPower(0.0);
-
+    if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){
+        intake->SetPower(0.35);
+    }
+    else if(!tankdrive->stickUtil->GetButton(4) && tankdrive->stickUtil->GetButton(5)){
+        intake->SetPower(-0.35);
+    }
+    else{
+        intake->SetPower(0.0);
+    }
         Wait(0.005);
     }
     dash->PutNumber("Arm Power", tankdrive->stickUtil->GetY());
     dash->PutNumber("Drive Throttle", driveThrottle);
     dash->PutNumber("Lift Throttle", liftThrottle);
     dash->PutNumber("Stilts Throttle", stiltsThrottle);
-    //dash->PutNumber("Lift Encoder Position", lift->GetEncoderPosition());
+    dash->PutNumber("Lift Encoder Position", lift->GetEncoderPosition());
 }
 
 void Robot::TeleopInit() {
-  //  tankdrive->ResetEncoders();
-  //  pointer2msLifeCam1->SetExposureAuto();
 }
 
 void Robot::TeleopPeriodic() {
@@ -163,7 +178,7 @@ void Robot::TeleopPeriodic() {
         }
     }
     if(lastBtn11 && !tankdrive->stickUtil->GetButton(11)){
-        //arm = new Arm(dash);
+        arm = new Arm(dash);
     }
     lastBtn11 = tankdrive->stickUtil->GetButton(11);
     
@@ -172,50 +187,64 @@ void Robot::TeleopPeriodic() {
     tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
 
     stiltsThrottle = tankdrive->stickRight -> GetZ() / -2.0 + 0.5;
-    if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){}
-        //stilts->SetFrontPower(stiltsThrottle);
-    else if(!tankdrive->stickLeft->GetButton(3) && tankdrive->stickLeft -> GetButton(2)){}
-        //stilts->SetFrontPower(-1.0 * stiltsThrottle);
-    else{}
-        //stilts->SetFrontPower(0.0);
-    if(tankdrive->stickRight->GetButton(3) && !tankdrive->stickRight -> GetButton(2)){}
-        //stilts->SetRearPower(stiltsThrottle);
-    else if(!tankdrive->stickRight->GetButton(3) && tankdrive->stickRight -> GetButton(2)){}
-        //stilts->SetRearPower(-1.0 * stiltsThrottle);
-    else{}
-        //stilts->SetRearPower(0.0);
-    if(tankdrive->stickLeft->GetButton(4)){}
-        //stilts->SetDrivePower(0.5);
-    else if(tankdrive->stickLeft->GetButton(5)){}
-        //stilts->SetDrivePower(-0.5);
-    else{}
-        //stilts->SetDrivePower(0.0);
+    if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){
+        stilts->SetFrontPower(stiltsThrottle);
+    }
+    else if(!tankdrive->stickLeft->GetButton(3) && tankdrive->stickLeft -> GetButton(2)){
+        stilts->SetFrontPower(-1.0 * stiltsThrottle);
+    }
+    else{
+        stilts->SetFrontPower(0.0);
+    }
+    if(tankdrive->stickRight->GetButton(3) && !tankdrive->stickRight -> GetButton(2)){
+        stilts->SetRearPower(stiltsThrottle);
+    }
+    else if(!tankdrive->stickRight->GetButton(3) && tankdrive->stickRight -> GetButton(2)){
+        stilts->SetRearPower(-1.0 * stiltsThrottle);
+    }
+    else{
+        stilts->SetRearPower(0.0);
+    }
+    if(tankdrive->stickLeft->GetButton(4)){
+        stilts->SetDrivePower(0.5);
+    }
+    else if(tankdrive->stickLeft->GetButton(5)){
+        stilts->SetDrivePower(-0.5);
+    }
+    else{
+        stilts->SetDrivePower(0.0);
+    }
 
     liftThrottle = tankdrive->stickUtil->GetZ() / -2.0 + 0.5;
     
-    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2)){}
-        //lift->SetPower(liftThrottle);
-    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2)){}
-        //lift->SetPower(-1.0 * liftThrottle);
-    else
-        //lift -> SetPower(0.0);
+    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2)){
+        lift->SetPower(liftThrottle);
+    }
+    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2)){
+        lift->SetPower(-1.0 * liftThrottle);
+    }
+    else{
+        lift -> SetPower(0.0);
+    }
 
-    //arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
+    arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
-    if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){}
-        //intake->SetPower(0.35);
-    else if(!tankdrive->stickUtil->GetButton(4) && tankdrive->stickUtil->GetButton(5)){}
-        //intake->SetPower(-0.35);
-    else{}
-        //intake->SetPower(0.0);
-
+    if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){
+        intake->SetPower(0.35);
+    }
+    else if(!tankdrive->stickUtil->GetButton(4) && tankdrive->stickUtil->GetButton(5)){
+        intake->SetPower(-0.35);
+    }
+    else{
+        intake->SetPower(0.0);
+    }
         Wait(0.005);
     }
     dash->PutNumber("Arm Power", tankdrive->stickUtil->GetY());
     dash->PutNumber("Drive Throttle", driveThrottle);
     dash->PutNumber("Lift Throttle", liftThrottle);
     dash->PutNumber("Stilts Throttle", stiltsThrottle);
-    //dash->PutNumber("Lift Encoder Position", lift->GetEncoderPosition());
+    dash->PutNumber("Lift Encoder Position", lift->GetEncoderPosition());
 }
 
 

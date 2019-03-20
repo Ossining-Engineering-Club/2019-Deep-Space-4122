@@ -3,6 +3,7 @@
 //Tankdrive stuff:
 #define VERSION_NUMBER "1.0"
 
+#define ARM_ACCURACY 1.5
 #define LEFT_ENCODER_CONST -1.76
 #define RIGHT_ENCODER_CONST 1.76
 #define DRIVEBASE_WIDTH 22.75

@@ -13,7 +13,10 @@
 
 #include "OECPigeonIMU.h"
 #include "Tankdrive.h"
-
+#include "Arm.h"
+#include "Stilts.h"
+#include "Intake.h"
+#include "Lift.h"
 #include "Vision.h"
 #include "OECJoystick.h"
 #include<networktables/NetworkTableInstance.h>
@@ -36,10 +39,10 @@ private:
   double ypr[3];
   cs::UsbCamera* pointer2msLifeCam1;
   Tankdrive *tankdrive;
-  //Arm *arm;
-  //Intake *intake;
-  //Stilts *stilts;
-  //Lift *lift;
+  Arm *arm;
+  Intake *intake;
+  Stilts *stilts;
+  Lift *lift;
   Relay *lightRelay;
   SmartDashboard *dash;
   Vision *myVision;
