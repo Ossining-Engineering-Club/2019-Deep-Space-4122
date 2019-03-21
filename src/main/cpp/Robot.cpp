@@ -2,6 +2,7 @@
 cs::UsbCamera msLifeCam1;
 cs::UsbCamera msLifeCam2;
 cs::VideoSink server;
+bool reverseDrive = false;
 void Robot::RobotInit()
 {
     msLifeCam1 = CameraServer::GetInstance()->StartAutomaticCapture(0);
@@ -79,12 +80,16 @@ double stiltsThrottle = 0.0;
 double liftThrottle = 0.0;
 bool lastBtn6 = false;
 bool lastBtn11 = false;
+bool lastLeftTrigger = false;
 int source = 0;
 
 
 void Robot::AutonomousPeriodic() {
-
+    if(lastLeftTrigger && !tankdrive->stickLeft->GetButton(1))
+        reverseDrive = !reverseDrive;
+    lastLeftTrigger = tankdrive->stickLeft->GetButton(1);
     for(int x = 0; x <= 100; x++){
+    
     if(tankdrive->stickRight->GetButton(6) && !lastBtn6){
         if(source == 0){
             server.SetSource(msLifeCam1);
@@ -102,7 +107,16 @@ void Robot::AutonomousPeriodic() {
     
 
     driveThrottle = tankdrive->stickLeft->GetZ() / -2.0 + 0.5;
-    tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
+    if(!reverseDrive){
+        tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
+    }
+    else{
+        tankdrive->SetPower(driveThrottle * tankdrive->stickRight->GetY(), driveThrottle * tankdrive->stickLeft->GetY());
+    }
+
+    if(tankdrive->stickRight->GetButton(5)){
+        tankdrive->DriveVision(36.0, 0.15);
+    }
 
     stiltsThrottle = tankdrive->stickRight -> GetZ() / -2.0 + 0.5;
     if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){
@@ -171,6 +185,9 @@ void Robot::TeleopInit() {
 void Robot::TeleopPeriodic() {
 
     for(int x = 0; x <= 100; x++){
+    if(lastLeftTrigger && !tankdrive->stickLeft->GetButton(1))
+        reverseDrive = !reverseDrive;
+    lastLeftTrigger = tankdrive->stickLeft->GetButton(1);
     if(tankdrive->stickRight->GetButton(6) && !lastBtn6){
         if(source == 0){
             server.SetSource(msLifeCam1);
@@ -188,7 +205,15 @@ void Robot::TeleopPeriodic() {
     
 
     driveThrottle = tankdrive->stickLeft->GetZ() / -2.0 + 0.5;
-    tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
+    if(!reverseDrive){
+        tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
+    }
+    else{
+        tankdrive->SetPower(driveThrottle * tankdrive->stickRight->GetY(), driveThrottle * tankdrive->stickLeft->GetY());
+    }
+    if(tankdrive->stickRight->GetButton(5)){
+        tankdrive->DriveVision(36.0, 0.15);
+    }
 
     stiltsThrottle = tankdrive->stickRight -> GetZ() / -2.0 + 0.5;
     if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){
