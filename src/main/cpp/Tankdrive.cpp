@@ -24,7 +24,7 @@ Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEnco
     LeftBackDrive = new rev::CANSparkMax(26, rev::CANSparkMax::MotorType::kBrushless);
     RightFrontDrive = new rev::CANSparkMax(27, rev::CANSparkMax::MotorType::kBrushless);
     RightBackDrive = new rev::CANSparkMax(28, rev::CANSparkMax::MotorType::kBrushless);
-    pigeonIMU = new OECPigeonIMU(01); //CHANGE THIS BACK!!!
+    pigeonIMU = new OECPigeonIMU(IMUTalonSRX);
     pigeonIMU->ResetAngle();
     rightNeoEncoder = new rev::CANEncoder(*RightBackDrive);
     leftNeoEncoder = new rev::CANEncoder(*LeftBackDrive);
