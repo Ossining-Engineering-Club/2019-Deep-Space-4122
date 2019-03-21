@@ -42,7 +42,12 @@ void Robot::AutonomousInit() {
 
     if(!CenterSideDIO.Get()){
         double RightLeft = 1.0;
-        if(LeftRightDIO.Get()){RightLeft = -1.0;}
+        if(LeftRightDIO.Get()){RightLeft = -1.0;
+            dash->PutString("Autonomous Path", "Center Right");
+        }
+        else{
+            dash->PutString("Autonomous Path", "Center Left");
+        }
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, CENTER_STRAIGHT_DIST_1, .25, false);
         tankdrive->TurnToHeading(TURN_SPEED_1, -1.0 * RightLeft * CENTER_TURN_HEADING_1, 1.5);
         //drop arm
@@ -51,7 +56,13 @@ void Robot::AutonomousInit() {
     }
     else{
         double RightLeft = 1.0;
-        if(LeftRightDIO.Get()){RightLeft = -1.0;}
+        if(LeftRightDIO.Get()){
+            RightLeft = -1.0;
+            dash->PutString("Autonomous Path", "Side Right");
+        }
+        else{
+            dash->PutString("Autonomous Path", "Side Left");
+        }
 
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, SIDE_STRAIGHT_DIST_1, .25, false);
         tankdrive->TurnToHeading(TURN_SPEED_1, -1.0 * RightLeft * SIDE_TURN_HEADING_1, 1.5);
@@ -72,9 +83,6 @@ int source = 0;
 
 
 void Robot::AutonomousPeriodic() {
-    myVision->Update();
-    dash->PutNumber("Distance to Target", myVision->GetDistance(0));
-    dash->PutNumber("Angle to Target", myVision->GetAngle(0));
 
     for(int x = 0; x <= 100; x++){
     if(tankdrive->stickRight->GetButton(6) && !lastBtn6){
@@ -161,10 +169,6 @@ void Robot::TeleopInit() {
 }
 
 void Robot::TeleopPeriodic() {
-
-    myVision->Update();
-    dash->PutNumber("Distance to Target", myVision->GetDistance(0));
-    dash->PutNumber("Angle to Target", myVision->GetAngle(0));
 
     for(int x = 0; x <= 100; x++){
     if(tankdrive->stickRight->GetButton(6) && !lastBtn6){

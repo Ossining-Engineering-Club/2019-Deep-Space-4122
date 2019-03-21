@@ -63,7 +63,7 @@ double Tankdrive::GetRightEncoderDist(){
     return rightNeoEncoder->GetPosition() * RIGHT_ENCODER_CONST - rightEncoderOffset;
 }
 void Tankdrive::AlignRobotVision(double currentDist, double targetAngle){
-    dash->PutNumber("Current Heading", pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees));
+    //dash->PutNumber("Current Heading", pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees));
     TurnToTarget(0.05);
     vision.Update();
     double dist = vision.GetDistance(0);
@@ -103,9 +103,9 @@ void Tankdrive::AlignRobotVision(double currentDist, double targetAngle){
 void Tankdrive::TurnToTarget(double power){
     vision.Update();
     double dist = vision.GetDistance(0);
-    dash->PutNumber("Distance", dist);
+    //dash->PutNumber("Distance", dist);
     double xPos = (vision.GetX(0) + vision.GetX(1)) / 2;
-    dash->PutNumber("X Position", xPos);
+    //dash->PutNumber("X Position", xPos);
     while(xPos <= 160 - PIXEL_ACCURACY || xPos >= 160 + PIXEL_ACCURACY){
         if(stickRight->GetButton(1))
             AutonOverride = true;
@@ -123,7 +123,9 @@ void Tankdrive::DriveVision(double targetDist, double power){
     double proportionalVal = 0.0;
     double lastError = 0.0;
 
-    while(distance > targetDist){
+
+    int cycles = 0;
+    while(distance > targetDist && vision.GetNumContours() > 1){
         if(stickRight->GetButton(1))
             AutonOverride = true;
         if(AutonOverride)
@@ -139,8 +141,10 @@ void Tankdrive::DriveVision(double targetDist, double power){
     integralVal *= VISION_I;
     derivativeVal *=VISION_D;
     double correction = proportionalVal + integralVal + derivativeVal;
-    dash->PutNumber("correction value", correction);
-    dash->PutNumber("distance", distance);
+    //dash->PutNumber("correction value", correction);
+    if(cycles % 50 == 0)
+        dash->PutNumber("distance", distance);
+    cycles++;
     SetPower(power + correction, power - correction);
     }
 }
@@ -326,8 +330,8 @@ void Tankdrive::DriveGyro(double degreesPerInch, double degrees, double avgPower
     myTimer->Start();
     leftPower = avgPower-avgPower*0.5*radiansPerInch*inchPerRadDiff;
     rightPower = avgPower+avgPower*0.5*radiansPerInch*inchPerRadDiff;
-    dash->PutNumber("RightPower", rightPower);
-    dash->PutNumber("LeftPower", leftPower);
+    //dash->PutNumber("RightPower", rightPower);
+    //dash->PutNumber("LeftPower", leftPower);
     cout << "Right Power" << rightPower << endl;
     cout <<"Left Power " << leftPower << endl;
     pigeonIMU->ResetAngle();
