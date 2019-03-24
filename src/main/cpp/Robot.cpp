@@ -43,7 +43,7 @@ void Robot::RobotInit()
 
 void Robot::AutonomousInit() {
     //DigitalInput CenterSideDIO(8);
-//    DigitalInput LeftRightDIO(0);
+    DigitalInput LeftRightDIO(0);
 
     /*if(!CenterSideDIO.Get()){
         double RightLeft = 1.0;
@@ -60,7 +60,7 @@ void Robot::AutonomousInit() {
         tankdrive->TurnToHeading(TURN_SPEED_1, RightLeft * CENTER_TURN_HEADING_1, 1.5);
     }*/
     //else{
-/*        double RightLeft = 1.0; // Insert jumper for right side path
+        double RightLeft = 1.0; // Insert jumper for right side path
         if(LeftRightDIO.Get()){
             RightLeft = -1.0;     //Run left side path
             dash->PutString("Autonomous Path", "Side Right");
@@ -70,9 +70,10 @@ void Robot::AutonomousInit() {
         }
 
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, SIDE_STRAIGHT_DIST_1, .25, false);
+        
         tankdrive->TurnToHeading(TURN_SPEED_1, -1.0 * RightLeft * SIDE_TURN_HEADING_1, 1.5);
-        tankdrive->DriveStraightGyro(STRAIGHT_SPEED_2, SIDE_STRAIGHT_DIST_2, 0.25, true);
-        tankdrive->TurnToHeading(TURN_SPEED_2, RightLeft * SIDE_TURN_HEADING_2, 1.5);*/
+        tankdrive->DriveStraightGyro(STRAIGHT_SPEED_2, SIDE_STRAIGHT_DIST_2, 0.0, true);
+        tankdrive->TurnToHeading(TURN_SPEED_2, RightLeft * SIDE_TURN_HEADING_2, 1.5);
         //tankdrive->DriveVision(36.0, STRAIGHT_SPEED_3);
         //tankdrive->SetPower(0.0, 0.0);
         //drop arm
@@ -165,6 +166,7 @@ void Robot::AutonomousPeriodic() {
         lift -> SetPower(0.0);
     }
 
+    if(!tankdrive->stickUtil->GetButton(7))
     arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
     if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){
@@ -192,6 +194,8 @@ void Robot::TeleopInit() {
 void Robot::TeleopPeriodic() {
 
     //for(int x = 0; x <= 100; x++){
+    if(tankdrive->stickUtil->GetButton(7))
+        arm->SetToPosition(0.15, -50.0);
     if(lastLeftTrigger && !tankdrive->stickLeft->GetButton(1))
         reverseDrive = !reverseDrive;
     lastLeftTrigger = tankdrive->stickLeft->GetButton(1);
@@ -268,7 +272,7 @@ void Robot::TeleopPeriodic() {
     else{
         lift -> SetPower(0.0);
     }
-
+    if(!tankdrive->stickUtil->GetButton(7))
     arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
     if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){

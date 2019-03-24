@@ -58,7 +58,7 @@ double Tankdrive::GetLeftEncoderDist(){
     return leftNeoEncoder->GetPosition() * LEFT_ENCODER_CONST - leftEncoderOffset;
 }
 
-int Tankdrive::GetLeftEncoderRaw(){return leftEncoder->GetRaw();}
+int Tankdrive::GetLeftEncoderRaw(){return leftNeoEncoder->GetPosition();}
 double Tankdrive::GetRightEncoderDist(){
     return rightNeoEncoder->GetPosition() * RIGHT_ENCODER_CONST - rightEncoderOffset;
 }
@@ -148,7 +148,7 @@ void Tankdrive::DriveVision(double targetDist, double power){
     SetPower(power + correction, power - correction);
     }
 }
-int Tankdrive::GetRightEncoderRaw(){return rightEncoder->GetRaw();}
+int Tankdrive::GetRightEncoderRaw(){return rightNeoEncoder->GetPosition();}
 void Tankdrive::TurnToHeading(double speed, double angle, float TimeOut){
     
     /*dash->PutNumber("Current Heading", pigeonIMU->GetYaw(OECPigeonIMU::AngleUnits::degrees));
@@ -359,6 +359,6 @@ void Tankdrive::DriveGyroByRadius(double radius, double degrees, double avgPower
     }
 }
 void Tankdrive::ResetEncoders(){
-    leftEncoderOffset = GetLeftEncoderDist();
-    rightEncoderOffset = GetRightEncoderDist();
+    leftEncoderOffset = GetLeftEncoderRaw() * LEFT_ENCODER_CONST;
+    rightEncoderOffset = GetRightEncoderRaw() * RIGHT_ENCODER_CONST;
 }
