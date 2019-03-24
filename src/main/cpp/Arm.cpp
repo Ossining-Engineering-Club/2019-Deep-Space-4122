@@ -16,13 +16,15 @@ void Arm::SetPower(double power, bool override){
         armMotor->Set(0.0);
     else
         armMotor->Set(power);
+
+    smartdash->PutNumber("Arm Position", armEncoder->GetPosition());
 }
-void Arm::SetToPosition(double EncoderPosition){
+void Arm::SetToPosition(double power, double EncoderPosition){
     if(GetEncoderPosition() > EncoderPosition-ARM_ACCURACY){
-        SetPower(-0.2, false);
+        SetPower(-1.0 * power, false);
     }
     else if(GetEncoderPosition() < EncoderPosition + ARM_ACCURACY){
-        SetPower(0.2, false);
+        SetPower(power, false);
     }
     else{
         SetPower(0.0, false);

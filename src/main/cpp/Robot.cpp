@@ -7,10 +7,10 @@ void Robot::RobotInit()
 {
     msLifeCam1 = CameraServer::GetInstance()->StartAutomaticCapture(0);
     msLifeCam2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
-    msLifeCam1.SetResolution(320, 240);
+    msLifeCam1.SetResolution(160, 120);
     msLifeCam1.SetFPS(15);
     msLifeCam1.SetExposureAuto();
-    msLifeCam2.SetResolution(320, 240);
+    msLifeCam2.SetResolution(160, 120);
     msLifeCam2.SetFPS(15);
     msLifeCam2.SetExposureAuto();
     server = CameraServer::GetInstance()->GetServer();
@@ -26,6 +26,10 @@ void Robot::RobotInit()
 
     lightRelay = new Relay(0, frc::Relay::Direction::kForwardOnly);
     tankdrive = new Tankdrive(1, 0, 1,2,3,4, dash);
+    stilts = new Stilts();
+    intake = new Intake();
+    lift = new Lift(dash);
+    arm = new Arm(dash);
 
     myVision = new Vision();
 
@@ -38,10 +42,10 @@ void Robot::RobotInit()
 }
 
 void Robot::AutonomousInit() {
-    DigitalInput CenterSideDIO(8);
-    DigitalInput LeftRightDIO(9);
+    //DigitalInput CenterSideDIO(8);
+//    DigitalInput LeftRightDIO(0);
 
-    if(!CenterSideDIO.Get()){
+    /*if(!CenterSideDIO.Get()){
         double RightLeft = 1.0;
         if(LeftRightDIO.Get()){RightLeft = -1.0;
             dash->PutString("Autonomous Path", "Center Right");
@@ -54,11 +58,11 @@ void Robot::AutonomousInit() {
         //drop arm
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, CENTER_STRAIGHT_DIST_2, .25, false);
         tankdrive->TurnToHeading(TURN_SPEED_1, RightLeft * CENTER_TURN_HEADING_1, 1.5);
-    }
-    else{
-        double RightLeft = 1.0;
+    }*/
+    //else{
+/*        double RightLeft = 1.0; // Insert jumper for right side path
         if(LeftRightDIO.Get()){
-            RightLeft = -1.0;
+            RightLeft = -1.0;     //Run left side path
             dash->PutString("Autonomous Path", "Side Right");
         }
         else{
@@ -68,12 +72,12 @@ void Robot::AutonomousInit() {
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_1, SIDE_STRAIGHT_DIST_1, .25, false);
         tankdrive->TurnToHeading(TURN_SPEED_1, -1.0 * RightLeft * SIDE_TURN_HEADING_1, 1.5);
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_2, SIDE_STRAIGHT_DIST_2, 0.25, true);
-        tankdrive->TurnToHeading(TURN_SPEED_2, RightLeft * SIDE_TURN_HEADING_2, 1.5);
-        tankdrive->DriveVision(36.0, STRAIGHT_SPEED_3);
-        tankdrive->SetPower(0.0, 0.0);
+        tankdrive->TurnToHeading(TURN_SPEED_2, RightLeft * SIDE_TURN_HEADING_2, 1.5);*/
+        //tankdrive->DriveVision(36.0, STRAIGHT_SPEED_3);
+        //tankdrive->SetPower(0.0, 0.0);
         //drop arm
-        tankdrive->TurnToHeading(TURN_SPEED_3, RightLeft * FINAL_TURN_HEADING, 1.5);
-    }
+        //tankdrive->TurnToHeading(TURN_SPEED_3, RightLeft * FINAL_TURN_HEADING, 1.5);
+    //}
 }
 double driveThrottle = 0.0;
 double stiltsThrottle = 0.0;
@@ -107,15 +111,14 @@ void Robot::AutonomousPeriodic() {
     
 
     driveThrottle = tankdrive->stickLeft->GetZ() / -2.0 + 0.5;
+    if(tankdrive->stickLeft->GetButton(1))
+        driveThrottle = 0.45;
     if(!reverseDrive){
         tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
     }
     else{
-        tankdrive->SetPower(driveThrottle * tankdrive->stickRight->GetY(), driveThrottle * tankdrive->stickLeft->GetY());
-    }
-
-    if(tankdrive->stickRight->GetButton(5)){
-        tankdrive->DriveVision(36.0, 0.15);
+        //tankdrive->SetPower(driveThrottle * tankdrive->stickRight->GetY(), driveThrottle * tankdrive->stickLeft->GetY());
+        tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
     }
 
     stiltsThrottle = tankdrive->stickRight -> GetZ() / -2.0 + 0.5;
@@ -149,10 +152,13 @@ void Robot::AutonomousPeriodic() {
 
     liftThrottle = tankdrive->stickUtil->GetZ() / -2.0 + 0.5;
     
-    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2)){
+    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2) 
+        && lift->GetEncoderPosition() < MAXLIFT){
+
         lift->SetPower(liftThrottle);
     }
-    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2)){
+    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2) 
+        && lift->GetEncoderPosition() > MINLIFT){
         lift->SetPower(-1.0 * liftThrottle);
     }
     else{
@@ -162,14 +168,15 @@ void Robot::AutonomousPeriodic() {
     arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
     if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){
-        intake->SetPower(0.35);
+        intake->SetPower(0.6);
     }
     else if(!tankdrive->stickUtil->GetButton(4) && tankdrive->stickUtil->GetButton(5)){
-        intake->SetPower(-0.35);
+        intake->SetPower(-0.6);
     }
     else{
         intake->SetPower(0.0);
     }
+
         Wait(0.005);
     }
     dash->PutNumber("Arm Power", tankdrive->stickUtil->GetY());
@@ -184,7 +191,7 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-    for(int x = 0; x <= 100; x++){
+    //for(int x = 0; x <= 100; x++){
     if(lastLeftTrigger && !tankdrive->stickLeft->GetButton(1))
         reverseDrive = !reverseDrive;
     lastLeftTrigger = tankdrive->stickLeft->GetButton(1);
@@ -205,17 +212,18 @@ void Robot::TeleopPeriodic() {
     
 
     driveThrottle = tankdrive->stickLeft->GetZ() / -2.0 + 0.5;
+    if(tankdrive->stickLeft->GetButton(1))
+        driveThrottle = 0.45;
     if(!reverseDrive){
         tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
     }
     else{
-        tankdrive->SetPower(driveThrottle * tankdrive->stickRight->GetY(), driveThrottle * tankdrive->stickLeft->GetY());
-    }
-    if(tankdrive->stickRight->GetButton(5)){
-        tankdrive->DriveVision(36.0, 0.15);
+        tankdrive->SetPower(-1.0 * driveThrottle * tankdrive->stickLeft->GetY(), -1.0 * driveThrottle * tankdrive->stickRight->GetY());
+        //tankdrive->SetPower(driveThrottle * tankdrive->stickRight->GetY(), driveThrottle * tankdrive->stickLeft->GetY());
     }
 
-    stiltsThrottle = tankdrive->stickRight -> GetZ() / -2.0 + 0.5;
+    stiltsThrottle = tankdrive->stickRight->GetZ() / -2.0 + 0.5;
+    
     if(tankdrive->stickLeft->GetButton(3) && !tankdrive->stickLeft -> GetButton(2)){
         stilts->SetFrontPower(stiltsThrottle);
     }
@@ -225,6 +233,7 @@ void Robot::TeleopPeriodic() {
     else{
         stilts->SetFrontPower(0.0);
     }
+
     if(tankdrive->stickRight->GetButton(3) && !tankdrive->stickRight -> GetButton(2)){
         stilts->SetRearPower(stiltsThrottle);
     }
@@ -234,6 +243,7 @@ void Robot::TeleopPeriodic() {
     else{
         stilts->SetRearPower(0.0);
     }
+    
     if(tankdrive->stickLeft->GetButton(4)){
         stilts->SetDrivePower(0.5);
     }
@@ -246,10 +256,13 @@ void Robot::TeleopPeriodic() {
 
     liftThrottle = tankdrive->stickUtil->GetZ() / -2.0 + 0.5;
     
-    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2)){
+    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2) 
+        && lift->GetEncoderPosition() < MAXLIFT){
+
         lift->SetPower(liftThrottle);
     }
-    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2)){
+    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2) 
+        && lift->GetEncoderPosition() > MINLIFT){
         lift->SetPower(-1.0 * liftThrottle);
     }
     else{
@@ -259,16 +272,16 @@ void Robot::TeleopPeriodic() {
     arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
     if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){
-        intake->SetPower(0.35);
+        intake->SetPower(0.6);
     }
     else if(!tankdrive->stickUtil->GetButton(4) && tankdrive->stickUtil->GetButton(5)){
-        intake->SetPower(-0.35);
+        intake->SetPower(-0.6);
     }
     else{
         intake->SetPower(0.0);
     }
         Wait(0.005);
-    }
+    //}
     dash->PutNumber("Arm Power", tankdrive->stickUtil->GetY());
     dash->PutNumber("Drive Throttle", driveThrottle);
     dash->PutNumber("Lift Throttle", liftThrottle);

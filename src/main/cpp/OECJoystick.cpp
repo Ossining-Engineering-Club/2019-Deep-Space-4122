@@ -11,7 +11,7 @@ double OECJoystick::GetX(){
 }
 double OECJoystick::GetY(){
     double yAxis = stick->GetY();
-    if(fabs(yAxis) > 0.045)
+    if(fabs(yAxis) > 0.055)
         return yAxis;
     else
         return 0.0;

@@ -11,6 +11,6 @@ class Arm{
     public:
         Arm(frc::SmartDashboard *dash);
         void SetPower(double power, bool override);
-        void SetToPosition(double EncoderPosition);
+        void SetToPosition(double power, double EncoderPosition);
         double GetEncoderPosition();
 };

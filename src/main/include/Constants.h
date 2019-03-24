@@ -1,15 +1,18 @@
 #define DEBUG true
 
 //Tankdrive stuff:
-#define VERSION_NUMBER "1.0"
+#define VERSION_NUMBER "1.3"
 
 #define ARM_ACCURACY 1.5
-#define LEFT_ENCODER_CONST -1.76
-#define RIGHT_ENCODER_CONST 1.76
+#define LEFT_ENCODER_CONST -2.44 //-1.76
+#define RIGHT_ENCODER_CONST 2.44 //1.76
 #define DRIVEBASE_WIDTH 22.75
 
 #define STRAIGHT_DRIVE_CORRECTION 1.02
 #define BACKWARD_DRIVE_CORRECTION 1.0
+
+#define MINLIFT 40.0
+#define MAXLIFT 920.0 //975.5 is the abolute top
 
 #define DRIVE_MAX_RPM 5700.0
 #define DRIVE_PID_P 0.0
@@ -57,7 +60,7 @@
 
 //--------------------AUTONOMOUS ------------------------------------------------------------
 //SIDE
-#define STRAIGHT_SPEED_1 0.3
+#define STRAIGHT_SPEED_1 0.6
 #define TURN_SPEED_1 0.3
 #define STRAIGHT_SPEED_2 0.3
 #define TURN_SPEED_2 0.15

@@ -16,6 +16,7 @@ class Tankdrive{
         OECJoystick *stickUtil;
         enum LoopMode{internal = 0, external = 1};
         enum DriveSide{left = 0, right = 1};
+        OECPigeonIMU *pigeonIMU;
 
         Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEncoder2, int rightEncoder1, int rightEncoder2, SmartDashboard *dash);
         OECPigeonIMU* GetPigeonIMU();
@@ -42,7 +43,6 @@ class Tankdrive{
         Vision vision;
         SmartDashboard *dash;
         OECPIDController *pidController;
-        OECPigeonIMU *pigeonIMU;
         ctre::phoenix::motorcontrol::can::WPI_TalonSRX *IMUTalonSRX;
         rev::CANSparkMax *LeftFrontDrive;
         rev::CANSparkMax *LeftBackDrive;
