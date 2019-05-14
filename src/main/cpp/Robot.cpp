@@ -73,7 +73,7 @@ void Robot::AutonomousInit() {
         
         tankdrive->TurnToHeading(TURN_SPEED_1, -1.0 * RightLeft * SIDE_TURN_HEADING_1, 1.5);
         tankdrive->DriveStraightGyro(STRAIGHT_SPEED_2, SIDE_STRAIGHT_DIST_2, 0.0, true);
-        tankdrive->TurnToHeading(TURN_SPEED_2, RightLeft * SIDE_TURN_HEADING_2, 1.5);
+        tankdrive->TurnToHeading(TURN_SPEED_2, RightLeft * SIDE_TURN_HEADING_2, 3.0);
         //tankdrive->DriveVision(36.0, STRAIGHT_SPEED_3);
         //tankdrive->SetPower(0.0, 0.0);
         //drop arm
@@ -87,11 +87,9 @@ bool lastBtn6 = false;
 bool lastBtn11 = false;
 bool lastLeftTrigger = false;
 int source = 0;
-
+int armMode = 0;
 
 void Robot::AutonomousPeriodic() {
-    if(lastLeftTrigger && !tankdrive->stickLeft->GetButton(1))
-        reverseDrive = !reverseDrive;
     lastLeftTrigger = tankdrive->stickLeft->GetButton(1);
     for(int x = 0; x <= 100; x++){
     
@@ -153,21 +151,56 @@ void Robot::AutonomousPeriodic() {
 
     liftThrottle = tankdrive->stickUtil->GetZ() / -2.0 + 0.5;
     
-    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2) 
-        && lift->GetEncoderPosition() < MAXLIFT){
+        if(abs(tankdrive->stickUtil->GetY()) > ARM_MANUAL_THRES || tankdrive->stickUtil->GetButton(2) || tankdrive->stickUtil->GetButton(3))
+       { armMode = 0;
+       dash->PutString("arm mode", "Manual");
+       }
+    else if(tankdrive->stickUtil->GetButton(1))
+    {
+        armMode = 1;
+        dash->PutString("arm mode", "Load");
+}
+    else if(tankdrive->stickUtil->GetButton(7))
+        armMode = 2;
+    else if(tankdrive->stickUtil->GetButton(6))
+        armMode = 3;
+    else if(tankdrive->stickUtil->GetButton(8))
+        armMode = 4;
+    if(lastLeftTrigger && !tankdrive->stickLeft->GetButton(1))
+        reverseDrive = !reverseDrive;
+        
+    if(armMode == 0){
+        
+        arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
-        lift->SetPower(liftThrottle);
-    }
-    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2) 
-        && lift->GetEncoderPosition() > MINLIFT){
-        lift->SetPower(-1.0 * liftThrottle);
-    }
-    else{
-        lift -> SetPower(0.0);
+        if(tankdrive->stickUtil->GetButton(3)){
+            lift->SetPower(liftThrottle);
+        }
+        else if(tankdrive->stickUtil->GetButton(2)){
+            lift->SetPower(-1.0 * liftThrottle);
+        }
+        else{
+            lift -> SetPower(0.0);
+        }
     }
 
-    if(!tankdrive->stickUtil->GetButton(7))
-    arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
+    else if(armMode == 1){
+        dash->PutString("arm state", "Load");
+        arm->SetToPosition(0.4, ARM_PICKUP_POS);
+        lift->SetToPosition(0.3, LIFT_PICKUP_POS);
+    }
+    else if(armMode == 2){
+        arm->SetToPosition(0.4, ARM_HOLD_POS);
+        lift->SetToPosition(0.3, LIFT_HOLD_POS);
+    }
+    else if(armMode == 3){
+        arm->SetToPosition(0.4, ARM_LEV_2_POS);
+        lift->SetToPosition(0.55, LIFT_LEV_2_POS);
+    }
+    else if(armMode == 4){
+        arm->SetToPosition(0.4, ARM_LEV_3_POS);
+        lift->SetToPosition(0.55, LIFT_LEV_3_POS);
+    }
 
     if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){
         intake->SetPower(0.6);
@@ -192,7 +225,6 @@ void Robot::TeleopInit() {
 }
 
 void Robot::TeleopPeriodic() {
-
     //for(int x = 0; x <= 100; x++){
     if(tankdrive->stickUtil->GetButton(7))
         arm->SetToPosition(0.15, -50.0);
@@ -255,25 +287,62 @@ void Robot::TeleopPeriodic() {
         stilts->SetDrivePower(-0.5);
     }
     else{
+
         stilts->SetDrivePower(0.0);
     }
 
     liftThrottle = tankdrive->stickUtil->GetZ() / -2.0 + 0.5;
     
-    if(tankdrive->stickUtil->GetButton(3) && !tankdrive->stickUtil ->GetButton(2) 
-        && lift->GetEncoderPosition() < MAXLIFT){
+    if(abs(tankdrive->stickUtil->GetY()) > ARM_MANUAL_THRES || tankdrive->stickUtil->GetButton(2) || tankdrive->stickUtil->GetButton(3))
+       { armMode = 0;
+       dash->PutString("arm mode", "Manual");
+       }
+    else if(tankdrive->stickUtil->GetButton(1))
+    {
+        armMode = 1;
+        dash->PutString("arm mode", "Load");
+}
+    else if(tankdrive->stickUtil->GetButton(7))
+        armMode = 2;
+    else if(tankdrive->stickUtil->GetButton(6))
+        armMode = 3;
+    else if(tankdrive->stickUtil->GetButton(8))
+        armMode = 4;
+    if(lastLeftTrigger && !tankdrive->stickLeft->GetButton(1))
+        reverseDrive = !reverseDrive;
+        
+    if(armMode == 0){
+        
+        arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
 
-        lift->SetPower(liftThrottle);
+        if(tankdrive->stickUtil->GetButton(3)){
+            lift->SetPower(liftThrottle);
+        }
+        else if(tankdrive->stickUtil->GetButton(2)){
+            lift->SetPower(-1.0 * liftThrottle);
+        }
+        else{
+            lift -> SetPower(0.0);
+        }
     }
-    else if(!tankdrive->stickUtil->GetButton(3) && tankdrive->stickUtil ->GetButton(2) 
-        && lift->GetEncoderPosition() > MINLIFT){
-        lift->SetPower(-1.0 * liftThrottle);
+
+    else if(armMode == 1){
+        dash->PutString("arm state", "Load");
+        arm->SetToPosition(0.4, ARM_PICKUP_POS);
+        lift->SetToPosition(0.3, LIFT_PICKUP_POS);
     }
-    else{
-        lift -> SetPower(0.0);
+    else if(armMode == 2){
+        arm->SetToPosition(0.4, ARM_HOLD_POS);
+        lift->SetToPosition(0.3, LIFT_HOLD_POS);
     }
-    if(!tankdrive->stickUtil->GetButton(7))
-    arm->SetPower(tankdrive->stickUtil->GetY(), tankdrive->stickUtil->GetButton(10));
+    else if(armMode == 3){
+        arm->SetToPosition(0.4, ARM_LEV_2_POS);
+        lift->SetToPosition(0.55, LIFT_LEV_2_POS);
+    }
+    else if(armMode == 4){
+        arm->SetToPosition(0.4, ARM_LEV_3_POS);
+        lift->SetToPosition(0.55, LIFT_LEV_3_POS);
+    }
 
     if(tankdrive->stickUtil->GetButton(4) && !tankdrive->stickUtil->GetButton(5)){
         intake->SetPower(0.6);

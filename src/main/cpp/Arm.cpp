@@ -20,15 +20,19 @@ void Arm::SetPower(double power, bool override){
     smartdash->PutNumber("Arm Position", armEncoder->GetPosition());
 }
 void Arm::SetToPosition(double power, double EncoderPosition){
-    if(GetEncoderPosition() > EncoderPosition-ARM_ACCURACY){
+    double correction = ARM_PROP*(EncoderPosition-GetEncoderPosition());
+    if(abs(correction) > power)
+        correction = power * (abs(correction)/correction);
+    SetPower(correction, false);
+    /*if(GetEncoderPosition() > EncoderPosition+ARM_ACCURACY){
         SetPower(-1.0 * power, false);
-    }
-    else if(GetEncoderPosition() < EncoderPosition + ARM_ACCURACY){
+    }E
+    else if(GetEncoderPosition() < EncoderPosition - ARM_ACCURACY){
         SetPower(power, false);
     }
     else{
         SetPower(0.0, false);
-    }
+    }*/
 }
 double Arm::GetEncoderPosition(){
     return armEncoder->GetPosition();

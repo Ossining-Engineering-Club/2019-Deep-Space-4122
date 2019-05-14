@@ -3,7 +3,7 @@
 //Tankdrive stuff:
 #define VERSION_NUMBER "1.3"
 
-#define ARM_ACCURACY 3.0
+
 #define LEFT_ENCODER_CONST -2.44 //-1.76
 #define RIGHT_ENCODER_CONST 2.44 //1.76
 #define DRIVEBASE_WIDTH 22.75
@@ -11,8 +11,7 @@
 #define STRAIGHT_DRIVE_CORRECTION 1.02
 #define BACKWARD_DRIVE_CORRECTION 1.0
 
-#define MINLIFT 40.0
-#define MAXLIFT 920.0 //975.5 is the abolute top
+
 
 #define DRIVE_MAX_RPM 5700.0
 #define DRIVE_PID_P 0.0
@@ -63,17 +62,34 @@
 #define STRAIGHT_SPEED_1 0.6
 #define TURN_SPEED_1 0.3
 #define STRAIGHT_SPEED_2 0.3
-#define TURN_SPEED_2 0.15
+#define TURN_SPEED_2 0.3
 #define STRAIGHT_SPEED_3 0.2
 #define TURN_SPEED_3 0.3
 
 #define SIDE_STRAIGHT_DIST_1 80.0
-#define SIDE_TURN_HEADING_1 8.0
+#define SIDE_TURN_HEADING_1 6.0
 #define SIDE_STRAIGHT_DIST_2 136.0
-#define SIDE_TURN_HEADING_2 93.0
+#define SIDE_TURN_HEADING_2 90.0
 #define FINAL_DISTANCE 0.0
 #define FINAL_TURN_HEADING 0.0
 //CENTER
 #define CENTER_STRAIGHT_DIST_1 48.0
 #define CENTER_TURN_HEADING_1 2.0
 #define CENTER_STRAIGHT_DIST_2 63.0
+
+#define ARM_PROP 0.05
+#define ARM_ACCURACY 0.5
+#define ARM_MANUAL_THRES 0.1
+#define ARM_PICKUP_POS -84.0
+#define ARM_HOLD_POS -70.0
+#define ARM_LEV_2_POS -29.0
+#define ARM_LEV_3_POS -17.2
+
+#define LIFT_PROP 0.01
+#define LIFT_ACCURACY 10.0
+#define LIFT_PICKUP_POS 0.0
+#define LIFT_HOLD_POS 0.0
+#define LIFT_LEV_2_POS 407.75
+#define LIFT_LEV_3_POS 830.0
+#define MINLIFT 65.0 //Was 40.0
+#define MAXLIFT 920.0 //975.5 is the abolute top
