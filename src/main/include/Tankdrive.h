@@ -50,6 +50,8 @@ class Tankdrive{
         rev::CANSparkMax *RightBackDrive;
         rev::CANEncoder *leftNeoEncoder;
         rev::CANEncoder *rightNeoEncoder;
+        rev::CANEncoder *rightThrowawayEncoder;
+        rev::CANEncoder *leftThrowawayEncoder;
         frc::Encoder *leftEncoder;
         frc::Encoder *rightEncoder;
         double throttle;

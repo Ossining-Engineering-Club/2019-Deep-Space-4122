@@ -20,14 +20,21 @@ Tankdrive::Tankdrive(int leftPort, int rightPort, int leftEncoder1, int leftEnco
     this->dash = dash;
     pidController = new OECPIDController(CURVED_KP, CURVED_KI, CURVED_KD, CURVED_CORRECTION);
     IMUTalonSRX = new ctre::phoenix::motorcontrol::can::WPI_TalonSRX(2);
+
     LeftFrontDrive = new rev::CANSparkMax(25, rev::CANSparkMax::MotorType::kBrushless);
+    LeftFrontDrive->GetEncoder();
+
     LeftBackDrive = new rev::CANSparkMax(26, rev::CANSparkMax::MotorType::kBrushless);
+    LeftBackDrive->GetEncoder();
+
     RightFrontDrive = new rev::CANSparkMax(27, rev::CANSparkMax::MotorType::kBrushless);
+    RightFrontDrive->GetEncoder();
+
     RightBackDrive = new rev::CANSparkMax(28, rev::CANSparkMax::MotorType::kBrushless);
+    RightBackDrive->GetEncoder();
+
     pigeonIMU = new OECPigeonIMU(IMUTalonSRX);
     pigeonIMU->ResetAngle();
-    rightNeoEncoder = new rev::CANEncoder(*RightBackDrive);
-    leftNeoEncoder = new rev::CANEncoder(*LeftBackDrive);
     leftEncoder = new frc::Encoder(leftEncoder1, leftEncoder2, false, CounterBase::EncodingType::k4X);
     rightEncoder = new frc::Encoder(rightEncoder1, rightEncoder2, true, CounterBase::EncodingType::k4X);
     rightEncoder->SetDistancePerPulse(RIGHT_ENCODER_CONST);

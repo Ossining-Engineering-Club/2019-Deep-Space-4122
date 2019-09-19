@@ -13,4 +13,5 @@ class Arm{
         void SetPower(double power, bool override);
         void SetToPosition(double power, double EncoderPosition);
         double GetEncoderPosition();
+        void ResetEncoder();
 };

@@ -25,11 +25,14 @@ void Robot::RobotInit()
     }
 
     lightRelay = new Relay(0, frc::Relay::Direction::kForwardOnly);
+    dash->PutString("Init Status", "Starting Neo Initialization");
     tankdrive = new Tankdrive(1, 0, 1,2,3,4, dash);
+    arm = new Arm(dash);
+    dash->PutString("Init Status", "Arm Initialized");
+    dash->PutString("Init Status", "Tankdrive Initialized");
     stilts = new Stilts();
     intake = new Intake();
     lift = new Lift(dash);
-    arm = new Arm(dash);
 
     myVision = new Vision();
 
@@ -226,6 +229,7 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
     //for(int x = 0; x <= 100; x++){
+
     if(tankdrive->stickUtil->GetButton(7))
         arm->SetToPosition(0.15, -50.0);
     if(lastLeftTrigger && !tankdrive->stickLeft->GetButton(1))
@@ -242,7 +246,7 @@ void Robot::TeleopPeriodic() {
         }
     }
     if(lastBtn11 && !tankdrive->stickUtil->GetButton(11)){
-        arm = new Arm(dash);
+        arm->ResetEncoder();
     }
     lastBtn11 = tankdrive->stickUtil->GetButton(11);
     
